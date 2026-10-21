@@ -9,7 +9,6 @@
 
    ```powershell
    node tools/manifest-check.mjs
-   node tests/run-all.mjs
    ```
 
 3. 构建未签名候选包：

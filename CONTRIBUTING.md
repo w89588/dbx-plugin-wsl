@@ -27,9 +27,6 @@ go vet ./...; go test ./...
 # Manifest install-time rules (host word lists, entrypoints, menu references)
 cd ..
 node tools/manifest-check.mjs
-
-# End-to-end: sidecar RPC probe + headless Chrome UI checks
-node tests/run-all.mjs
 ```
 
 `node ..\node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js dev --path . --port 5190` starts the browser development
@@ -39,7 +36,7 @@ set `--data-dir` to a regular user directory (for example under `%LOCALAPPDATA%`
 ## Pull requests
 
 - Keep changes scoped; update `docs/rpc-contract.md` when the UI/sidecar interface changes.
-- Run `go vet`, `go test`, `tools/manifest-check.mjs`, and `tests/run-all.mjs` before opening a PR.
+- Run `go vet`, `go test` and `tools/manifest-check.mjs` before opening a PR.
 - Update `README`/docs for user-visible changes.
 - Follow the existing code style (`gofmt` for Go, no external UI dependencies).
 - Do not commit `dist/`, `.dbx-dev/`, QA screenshots or generated artifacts; they are ignored by `.gitignore`.

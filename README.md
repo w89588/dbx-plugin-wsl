@@ -48,21 +48,21 @@ current user's privileges and only invokes the local `wsl.exe` / `wslc.exe` bina
 
 | Overview | Distributions |
 | --- | --- |
-| ![Overview](docs/screenshots/overview.png) | ![Distributions](docs/screenshots/distributions.png) |
+| ![Overview](docs/screenshots/overview.webp) | ![Distributions](docs/screenshots/distributions.webp) |
 
 | Containers | Images |
 | --- | --- |
-| ![Containers](docs/screenshots/containers.png) | ![Images](docs/screenshots/images.png) |
+| ![Containers](docs/screenshots/containers.webp) | ![Images](docs/screenshots/images.webp) |
 
 | Registry credentials | Pull authentication guidance |
 | --- | --- |
-| ![Registry credentials](docs/screenshots/registry-credentials.png) | ![Pull authentication guidance](docs/screenshots/registry-auth-error.png) |
+| ![Registry credentials](docs/screenshots/registry-credentials.webp) | ![Pull authentication guidance](docs/screenshots/registry-auth-error.webp) |
 
 | Command console | Settings |
 | --- | --- |
-| ![Command console](docs/screenshots/command-console.png) | ![Settings](docs/screenshots/settings.png) |
+| ![Command console](docs/screenshots/command-console.webp) | ![Settings](docs/screenshots/settings.webp) |
 
-Dark theme: [overview-dark.png](docs/screenshots/overview-dark.png).
+Dark theme: [overview-dark.png](docs/screenshots/overview-dark.webp).
 
 ## Requirements
 
@@ -134,8 +134,7 @@ Repository layout:
 ├── ui/index.html            sandboxed workbench UI
 ├── backend/                 Go sidecar (+ vendored DBX Go SDK)
 ├── docs/                    installation, releasing, RPC contract, screenshots
-├── tools/                   manifest preflight, release metadata, QA probes
-└── tests/                   end-to-end QA harness
+└── tools/                   manifest preflight and release metadata helpers
 ```
 
 ## Development
@@ -152,8 +151,8 @@ go vet ./...; go test ./...
 cd ..
 node tools/manifest-check.mjs
 
-# End-to-end: sidecar RPC probe + headless Chrome UI checks
-node tests/run-all.mjs
+# Build an unsigned candidate with release metadata
+node tools/release-meta.mjs --package dist\<package>.dbxp --repo w89588/dbx-plugin-wsl --tag v<version> --publisher w89588
 ```
 
 The RPC contract between the UI and the sidecar is documented in [docs/rpc-contract.md](docs/rpc-contract.md).

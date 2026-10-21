@@ -46,21 +46,21 @@ WSL 发行版（`wsl`）与 WSL 容器（`wslc`）。
 
 | 概览 | 发行版 |
 | --- | --- |
-| ![概览](docs/screenshots/overview.png) | ![发行版](docs/screenshots/distributions.png) |
+| ![概览](docs/screenshots/overview.webp) | ![发行版](docs/screenshots/distributions.webp) |
 
 | 容器 | 镜像 |
 | --- | --- |
-| ![容器](docs/screenshots/containers.png) | ![镜像](docs/screenshots/images.png) |
+| ![容器](docs/screenshots/containers.webp) | ![镜像](docs/screenshots/images.webp) |
 
 | 注册表凭据 | 拉取认证失败引导 |
 | --- | --- |
-| ![注册表凭据](docs/screenshots/registry-credentials.png) | ![认证失败引导](docs/screenshots/registry-auth-error.png) |
+| ![注册表凭据](docs/screenshots/registry-credentials.webp) | ![认证失败引导](docs/screenshots/registry-auth-error.webp) |
 
 | 命令控制台 | 设置 |
 | --- | --- |
-| ![命令控制台](docs/screenshots/command-console.png) | ![设置](docs/screenshots/settings.png) |
+| ![命令控制台](docs/screenshots/command-console.webp) | ![设置](docs/screenshots/settings.webp) |
 
-暗色主题：[overview-dark.png](docs/screenshots/overview-dark.png)。
+暗色主题：[overview-dark.png](docs/screenshots/overview-dark.webp)。
 
 ## 环境要求
 
