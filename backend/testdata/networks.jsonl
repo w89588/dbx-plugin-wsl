@@ -1,0 +1,4 @@
+{"CreatedAt":"2026-10-20 14:44:43.211468913 +0000 UTC","Driver":"bridge","ID":"0abca66cf2e0","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"bridge","Scope":"local"}
+{"CreatedAt":"2026-10-20 14:45:38.435435847 +0000 UTC","Driver":"bridge","ID":"6b57c83c0904","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"dbxnet","Scope":"local"}
+{"CreatedAt":"2026-10-20 14:42:28.168465659 +0000 UTC","Driver":"host","ID":"e9525952b9d5","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"host","Scope":"local"}
+{"CreatedAt":"2026-10-20 14:42:28.150160249 +0000 UTC","Driver":"null","ID":"c873ff26ddac","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"none","Scope":"local"}

@@ -1,0 +1,11 @@
+{
+  "name": "WSL Manager",
+  "description": "Manage WSL distributions and WSL containers (wslc) from DBX on Windows.",
+  "icon": "assets/plugin.svg",
+  "tags": ["wsl", "containers", "windows", "devops"],
+  "permissions": ["host.workbench", "host.events", "host.storage"],
+  "source": "https://github.com/w89588/dbx-plugin-wsl",
+  "homepage": "https://github.com/w89588/dbx-plugin-wsl",
+  "license": "Apache-2.0",
+  "releaseNotes": "Initial public release: visual management for WSL distributions (wsl) and WSL containers (wslc), including registry credentials and image management."
+}

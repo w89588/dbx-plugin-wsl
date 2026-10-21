@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/t8y2/dbx/plugin-sdk-v1/plugins/manifest.schema.json",
+  "manifest_version": 1,
+  "id": "com.dbx.wsl",
+  "name": "WSL Manager",
+  "version": "0.1.0",
+  "publisher": "w89588",
+  "description": "Visual manager for WSL distributions (wsl) and WSL containers (wslc) on Windows.",
+  "icon": "assets/plugin.svg",
+  "source": "https://github.com/w89588/dbx-plugin-wsl",
+  "homepage": "https://github.com/w89588/dbx-plugin-wsl",
+  "engines": {
+    "dbx": ">=0.5.68",
+    "host_api": "1"
+  },
+  "permissions": [
+    "host.workbench",
+    "host.events",
+    "host.storage"
+  ],
+  "entrypoints": {
+    "backend": {
+      "protocol_versions": [
+        1
+      ],
+      "transport": "stdio-jsonl",
+      "executable": "bin/dbx-plugin-wsl-manager"
+    },
+    "ui": {
+      "root": "ui",
+      "entry": "ui/index.html"
+    }
+  },
+  "contributions": [
+    {
+      "type": "workbench",
+      "id": "com.dbx.wsl.workbench",
+      "label": "WSL Manager",
+      "description": "Manage WSL distributions, WSL containers, images, volumes and networks.",
+      "icon": "assets/plugin.svg"
+    },
+    {
+      "type": "command",
+      "id": "com.dbx.wsl.open",
+      "label": "Open WSL Manager",
+      "description": "Open the WSL Manager workbench.",
+      "icon": "assets/plugin.svg",
+      "action": {
+        "type": "open-workbench",
+        "workbench": "com.dbx.wsl.workbench",
+        "presentation": "tab"
+      }
+    },
+    {
+      "type": "menus",
+      "id": "com.dbx.wsl.menus",
+      "items": [
+        {
+          "location": "commandPalette",
+          "command": "com.dbx.wsl.open",
+          "group": "primary",
+          "order": 10
+        },
+        {
+          "location": "appToolbar",
+          "command": "com.dbx.wsl.open",
+          "group": "navigation",
+          "order": 20,
+          "default_visible": true
+        }
+      ]
+    }
+  ],
+  "localizations": {
+    "zh-CN": {
+      "name": "WSL 管理器",
+      "description": "可视化管理 Windows 上的 WSL 发行版（wsl）与 WSL 容器（wslc）。",
+      "contributions": {
+        "com.dbx.wsl.workbench": {
+          "label": "WSL 管理器",
+          "description": "管理 WSL 发行版、WSL 容器、镜像、数据卷与网络。"
+        },
+        "com.dbx.wsl.open": {
+          "label": "打开 WSL 管理器",
+          "description": "打开 WSL 管理工作台。"
+        },
+        "com.dbx.wsl.menus": {
+          "label": "WSL 管理器菜单"
+        }
+      }
+    }
+  }
+}

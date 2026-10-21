@@ -1,0 +1,55 @@
+[
+  {
+    "Config": {
+      "Cmd": [
+        "sleep",
+        "300"
+      ],
+      "Entrypoint": null,
+      "Env": [
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      ],
+      "Healthcheck": null,
+      "Image": "alpine:3.20",
+      "Labels": {},
+      "StopTimeout": null,
+      "User": "",
+      "WorkingDir": "/"
+    },
+    "Created": "2026-10-20T14:45:31.401827609Z",
+    "HostConfig": {
+      "Memory": 0,
+      "NanoCpus": 0,
+      "NetworkMode": "bridge",
+      "Ulimits": []
+    },
+    "Id": "70759157800b83586540cae6189530a296d94e27ff6a9289d4f85e92077f0391",
+    "Image": "sha256:bf8527eb54c3680e728d5b4b383a8ba730d72dae7236fbc8dff97ed6b224a731",
+    "Labels": {},
+    "Mounts": [],
+    "Name": "/dbx-test",
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "Aliases": [],
+          "DriverOpts": {},
+          "Gateway": "172.17.0.1",
+          "IPAMConfig": null,
+          "IPAddress": "172.17.0.2",
+          "IPPrefixLen": 16,
+          "Links": [],
+          "MacAddress": "02:42:ac:11:00:02"
+        }
+      }
+    },
+    "Ports": {},
+    "State": {
+      "ExitCode": 0,
+      "FinishedAt": "0001-01-01T00:00:00Z",
+      "Health": null,
+      "Running": true,
+      "StartedAt": "2026-10-20T14:45:31.678074297Z",
+      "Status": "running"
+    }
+  }
+]

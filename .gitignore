@@ -1,0 +1,15 @@
+/dist/
+/.dbx-dev/
+/.dbx-dev-*/
+.env
+.dbx-repository-signing-key.env
+.DS_Store
+*.log
+
+# QA 临时产物
+/tests/tmp/
+/tests/screenshots/chrome-profile/
+
+# Go 本地构建缓存（如放在项目内）
+/.gotmp/
+/.gocache/

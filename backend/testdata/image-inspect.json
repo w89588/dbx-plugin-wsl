@@ -1,0 +1,42 @@
+[
+  {
+    "Architecture": "amd64",
+    "Author": "",
+    "Comment": "buildkit.dockerfile.v0",
+    "Config": {
+      "Cmd": [
+        "/bin/sh"
+      ],
+      "Entrypoint": null,
+      "Env": [
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      ],
+      "ExposedPorts": null,
+      "Labels": null,
+      "StopSignal": "",
+      "User": "",
+      "Volumes": null,
+      "WorkingDir": "/"
+    },
+    "Created": "2026-04-16T23:53:26.803599608Z",
+    "Id": "sha256:bf8527eb54c3680e728d5b4b383a8ba730d72dae7236fbc8dff97ed6b224a731",
+    "Metadata": {
+      "LastTagTime": "0001-01-01T00:00:00Z"
+    },
+    "Os": "linux",
+    "Parent": "",
+    "RepoDigests": [
+      "alpine@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc"
+    ],
+    "RepoTags": [
+      "alpine:3.20"
+    ],
+    "RootFS": {
+      "Layers": [
+        "sha256:08bc4e534116aa76b16015484b82eac51f9a593416feae9296c8a2d4bb7aa4a2"
+      ],
+      "Type": "layers"
+    },
+    "Size": 7807582
+  }
+]
