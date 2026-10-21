@@ -24,8 +24,8 @@ wsl --update
 ```powershell
 cd wsl-manager
 # 若 go build 报 Temp 目录权限错误，可先设置自定义临时目录：
-$env:GOTMPDIR = 'D:\work\dbx-plugin-wsl\.gotmp'
-$env:GOCACHE  = 'D:\work\dbx-plugin-wsl\.gocache'
+$env:GOTMPDIR = "$env:TEMP\dbx-wsl-build"
+$env:GOCACHE  = "$env:TEMP\dbx-wsl-gocache"
 
 node ..\node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js package .
 ```

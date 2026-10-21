@@ -691,7 +691,7 @@ const off = window.dbxPlugin.onEvent((event) => {
 12. 拉取不存在的私有镜像（如 `docker.io/library/definitely-not-a-real-image-xyz:latest`）时 `job/end.error.code = REGISTRY_AUTH_REQUIRED`（本机 wslc 3.0.3 / 3.0.4 原始报错含 `may require 'docker login'`）。
 13. 登录成功后 `wslc/images/pull` 私有镜像可正常拉取（需要有效凭据；无凭据的自动化测试只覆盖失败分类）。
 
-## 9. 实现注记（v1 实测，QA 与 Lead 验证）
+## 9. 实现注记（v1 实测）
 
 ### 9.1 前端调用超时建议
 

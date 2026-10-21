@@ -5,7 +5,7 @@
  * 依次执行:
  *   1. go build 构建 sidecar（产物在 workspace 外，GOTMPDIR/GOCACHE 指向仓库根）
  *   2. 复制 dbx-plugin CLI 到 workspace 外并启动 dev host
- *      （端口 5193；data-dir %LOCALAPPDATA%\dbx-wsl-dev\qa）
+ *      （端口 5193；data-dir 位于用户目录下的 dbx-wsl-dev\qa）
  *   3. 等待 /api/diagnostics 可用且 backendState=ready
  *   4. 运行 tools/sidecar-probe.mjs（真实 wsl/wslc RPC 检查）
  *   5. 运行 tools/ui-cdp-check.mjs（Chrome CDP 打开工作台、切换 9 页、截图）
@@ -13,7 +13,7 @@
  *
  * 环境注意：本会话 workspace 目录带 Low mandatory integrity label，workspace 内的
  * exe 以 Low IL 运行，spawn 的 wsl.exe/wslc.exe 会 E_ACCESSDENIED。因此本脚本
- * 自动把 CLI 复制到 %LOCALAPPDATA%\dbx-wsl-dev 再运行（可用 DBX_WSL_QA_HOME 覆盖）。
+ * 自动把 CLI 复制到用户目录下的 dbx-wsl-dev 再运行（可用 DBX_WSL_QA_HOME 覆盖）。
  * 这是本会话沙箱特性，不影响插件安装到真实 DBX 插件目录后的运行。
  *
  * 用法:
@@ -40,7 +40,7 @@ const TMP_DIR = path.join(PLUGIN_ROOT, 'tests', 'tmp');
 
 // workspace 目录带 Low mandatory integrity label：其中的 exe 会以 Low IL 运行，
 // 子进程调用 wsl.exe/wslc.exe 会 E_ACCESSDENIED。因此 dev data-dir、构建产物
-// 以及 dbx-plugin CLI 本身都必须放在 workspace 外（默认 %LOCALAPPDATA%\dbx-wsl-dev）。
+// 以及 dbx-plugin CLI 本身都必须放在源码目录之外（默认位于用户目录的 dbx-wsl-dev）。
 const EXTERNAL_ROOT = process.env.DBX_WSL_QA_HOME
   ? path.resolve(process.env.DBX_WSL_QA_HOME)
   : path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'dbx-wsl-dev');

@@ -17,8 +17,8 @@
  *
  * Sidecar 定位顺序:
  *   1. --sidecar=<path>
- *   2. %LOCALAPPDATA%\dbx-wsl-dev\qa\bin\dbx-plugin-wsl-manager.exe（workspace 外 dev host data-dir）
- *   3. %LOCALAPPDATA%\dbx-wsl-dev\qa-build\sidecar.exe（本工具 go build 输出）
+ *   2. <用户目录>\dbx-wsl-dev\qa\bin\dbx-plugin-wsl-manager.exe（dev host 的自定义 data-dir）
+ *   3. <用户目录>\dbx-wsl-dev\qa-build\sidecar.exe（本工具 go build 输出）
  *   4. wsl-manager/.dbx-dev/bin 或 wsl-manager/.dbx-dev-qa/bin（workspace 内，会警告 Low IL 风险）
  *   5. go build 到 workspace 外（GOTMPDIR/GOCACHE 指向仓库根）
  *
@@ -41,7 +41,7 @@ const TMP_DIR = path.join(PLUGIN_ROOT, 'tests', 'tmp');
 
 // 注意：workspace 目录带 Low mandatory integrity label，放在 workspace 内的可执行文件
 // 会以 Low IL 运行，子进程调用 wsl.exe/wslc.exe 会得到 E_ACCESSDENIED。
-// 因此 sidecar 的默认构建输出/数据目录都放到 workspace 外（%LOCALAPPDATA%\dbx-wsl-dev）。
+// 因此 sidecar 的默认构建输出/数据目录都放在源码目录之外（用户目录下的 dbx-wsl-dev）。
 const EXTERNAL_ROOT = process.env.DBX_WSL_QA_HOME
   ? path.resolve(process.env.DBX_WSL_QA_HOME)
   : path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'dbx-wsl-dev');
