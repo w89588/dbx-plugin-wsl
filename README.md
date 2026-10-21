@@ -8,8 +8,9 @@ WSL distributions (`wsl`) and WSL containers (`wslc`).
 The plugin is a DBX package (`.dbxp`) made of a sandboxed workbench UI and a native Go sidecar. The sidecar runs with the
 current user's privileges and only invokes the local `wsl.exe` / `wslc.exe` binaries.
 
-> Status: `v0.1.0` is submitted to the DBX Store for review. Until the signed build is listed, install the unsigned
-> candidate from the GitHub Release with development packages enabled in DBX.
+> Status: `v0.1.0` is published as an unsigned candidate on the [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.0).
+> The official store submission is open as [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321) and is
+> awaiting review and signing by the DBX Store maintainers.
 
 ## Features
 

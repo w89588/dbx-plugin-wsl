@@ -8,8 +8,8 @@ WSL 发行版（`wsl`）与 WSL 容器（`wslc`）。
 插件是 DBX 包（`.dbxp`），由沙箱工作台 UI 和原生 Go Sidecar 组成。Sidecar 以当前用户权限运行，只调用本机的
 `wsl.exe` / `wslc.exe`。
 
-> 状态：`v0.1.0` 已提交 DBX 官方商店审核。在签名版本上架前，可在 DBX 中开启“允许安装未签名开发包”，
-> 从 GitHub Release 安装未签名候选包。
+> 状态：`v0.1.0` 已在 [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.0) 发布未签名候选包；
+> 官方商店提交为 [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321)，等待 DBX Store 维护者审核与签名。
 
 ## 功能
 
