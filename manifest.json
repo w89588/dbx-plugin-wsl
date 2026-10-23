@@ -3,7 +3,7 @@
   "manifest_version": 1,
   "id": "com.dbx.wsl",
   "name": "WSL Manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "w89588",
   "description": "Visual manager for WSL distributions (wsl) and WSL containers (wslc) on Windows.",
   "icon": "assets/plugin.svg",
@@ -16,7 +16,8 @@
   "permissions": [
     "host.workbench",
     "host.events",
-    "host.storage"
+    "host.storage",
+    "host.binary"
   ],
   "entrypoints": {
     "backend": {

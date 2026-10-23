@@ -5,10 +5,10 @@
 一个 [DBX](https://dbxio.com/) 插件，为 Windows Subsystem for Linux 提供可视化管理界面：
 WSL 发行版（`wsl`）与 WSL 容器（`wslc`）。
 
-插件是 DBX 包（`.dbxp`），由沙箱工作台 UI 和原生 Go Sidecar 组成。Sidecar 以当前用户权限运行，只调用本机的
-`wsl.exe` / `wslc.exe`。
+插件是 DBX 包（`.dbxp`），由沙箱工作台 UI 和原生 Go Sidecar 组成。Sidecar 以当前用户权限运行，调用本机的
+WSL 工具与 Windows 辅助程序，详见下方权限披露。
 
-> 状态：`v0.1.0` 已在 [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.0) 发布未签名候选包；
+> 状态：`v0.1.1` 已在 [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.1) 发布未签名候选包；
 > 官方商店提交为 [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321)，等待 DBX Store 维护者审核与签名。
 
 ## 功能
@@ -149,10 +149,11 @@ Manifest 只申请：
 
 - `host.workbench`：打开插件工作台、设置标题。
 - `host.events`：接收 Sidecar 任务/事件通知。
+- `host.binary`：通过原生 Sidecar 执行本地 WSL 工具和 Windows 辅助程序。
 - `host.storage`：保存少量 UI 偏好（当前页签、刷新间隔、最近 registry server/username）。
 
 不申请网络、文件系统、剪贴板、数据库、连接或 AI 权限。沙箱 UI 无直接网络访问。原生 Sidecar 以当前用户权限运行，
-只启动 `wsl.exe` / `wslc.exe`；注册表密码通过 `wslc login --password-stdin` 传入，不进入 argv、日志、事件或错误信息。
+调用 `wsl.exe` / `wslc.exe`、`wt.exe`（终端回退为 `cmd.exe`）、`explorer.exe`，并通过 `taskkill` 取消进程树；注册表密码通过 `wslc login --password-stdin` 传入，不进入 argv、日志、事件或错误信息。
 
 ## 已知限制
 

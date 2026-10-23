@@ -1,6 +1,6 @@
-# WSL Manager v0.1.0
+# WSL Manager v0.1.1
 
-Initial public release.
+Permission declaration fix for the DBX Store review. Adds `host.binary` to the package manifest and candidate metadata to disclose the existing native process execution capability. Runtime behavior is unchanged; v0.1.0 remains available unchanged.
 
 ## Highlights
 
@@ -19,11 +19,11 @@ Initial public release.
 
 ## Permissions
 
-`host.workbench`, `host.events`, `host.storage` — no network, filesystem, clipboard, data or AI permissions are requested. The native sidecar runs with the current user and only invokes `wsl.exe` / `wslc.exe`.
+`host.workbench`, `host.events`, `host.storage`, `host.binary` — no network, filesystem, clipboard, data or AI permissions are requested. The native sidecar runs with the current user and invokes `wsl.exe` / `wslc.exe`, `wt.exe` (or `cmd.exe` as a terminal fallback), `explorer.exe`, and `taskkill` for process-tree cancellation.
 
 ## Install
 
-1. Download `com.dbx.wsl-0.1.0-windows-x64.dbxp` from this release.
+1. Download `com.dbx.wsl-0.1.1-windows-x64.dbxp` from this release.
 2. Open DBX → Plugin Center → install the local package (enable unsigned development packages if the store build is not signed yet).
 3. Open **WSL Manager** from the plugin shortcut / command palette.
 

@@ -6,9 +6,9 @@ A [DBX](https://dbxio.com/) plugin that provides a visual management surface for
 WSL distributions (`wsl`) and WSL containers (`wslc`).
 
 The plugin is a DBX package (`.dbxp`) made of a sandboxed workbench UI and a native Go sidecar. The sidecar runs with the
-current user's privileges and only invokes the local `wsl.exe` / `wslc.exe` binaries.
+current user's privileges and invokes local WSL tools and Windows helpers as disclosed below.
 
-> Status: `v0.1.0` is published as an unsigned candidate on the [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.0).
+> Status: `v0.1.1` is published as an unsigned candidate on the [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.1).
 > The official store submission is open as [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321) and is
 > awaiting review and signing by the DBX Store maintainers.
 
@@ -165,10 +165,12 @@ The manifest requests only:
 
 - `host.workbench` — open the plugin workbench and set its title.
 - `host.events` — receive sidecar job/event notifications.
+- `host.binary` — execute local WSL tools and Windows helpers through the native sidecar.
 - `host.storage` — persist small UI preferences (active tab, refresh interval, last registry server/username).
 
 No network, filesystem, clipboard, database, connection or AI permissions are requested. The sandboxed UI has no
-direct network access. The native sidecar runs as the current user and only starts `wsl.exe` / `wslc.exe`; registry
+direct network access. The native sidecar runs as the current user and invokes `wsl.exe` / `wslc.exe`,
+`wt.exe` (or `cmd.exe` as a terminal fallback), `explorer.exe`, and `taskkill` for process-tree cancellation. Registry
 passwords are written to `wslc login --password-stdin` and never appear in argv, logs, events or errors.
 
 ## Limitations
