@@ -1,31 +1,26 @@
-# WSL Manager v0.1.2
+# WSL 管理器 v0.1.2
 
-## 新功能 / What's new
+## 功能与修复
 
-- **空闲退出与保活**：从发行版页或设置页选择“保持发行版运行”、恢复 WSL 默认策略或分别自定义发行版 / WSL 2 虚拟机空闲超时。保活采用原生 `[general] instanceIdleTimeout=-1`，关闭终端或 DBX 后设置仍保留，不新增后台保活进程。
-- **配置保护与生效提示**：自动备份已有 `.wslconfig`，保留无关配置，检测外部修改冲突，阻止覆盖编辑器内未保存的修改。保存不自动关闭 WSL；界面提示用户在合适时机确认关闭、再启动发行版。
-- **源码与反馈**：侧栏和“设置 → 关于”直接访问本项目 GitHub 仓库与 Issues，提供 BUG / 功能建议表单和反馈指引，中英文可用。
+- **发行版保活**：提供保持运行、恢复默认和自定义空闲超时。保活采用 WSL 原生配置，关闭终端或 DBX 后设置仍保留。
+- **配置保护**：保存前自动备份，检测外部修改冲突和编辑器内未保存的修改，并明确提示重启生效；保存配置不会自动关闭 WSL。
+- **修复网页打开**：通过 Windows 默认浏览器打开仓库、Issues 和配置文档，修复链接误打开文件夹的问题。
+- **简化反馈入口**：删除“报告功能 BUG”“提出功能建议”两个按钮及下方裸链接，保留“GitHub 仓库”和“Issues 与反馈”。
+- **键盘焦点修复**：关闭确认框后不再被延迟回调抢走焦点，刷新设置页时保留校验错误提示的焦点。
+- **中文文档首页**：README 默认使用中文，新增英文版切换入口，移除首页的版本声明和官方 PR 状态提醒。
 
-Keep distributions running after terminals close, restore WSL defaults, or configure separate distro and VM idle timeouts. Changes are backed up, stale writes are rejected, and shutdown requires an explicit confirmation. New source and feedback links open this repository and its GitHub Issue forms in the default browser.
+## 使用与安装
 
-## 使用 / Usage
+保活设置：发行版 → 空闲退出与保活 → 选择策略 → 保存 → 在合适时机关闭 WSL → 重新启动所需发行版。
 
-发行版 → 空闲退出与保活 → 选择策略 → 保存 → 在合适时机关闭 WSL → 重新启动所需发行版。
+该设置不阻止 Windows 休眠，不在登录时自动启动 WSL；虚拟机设置不适用于 WSL 1 或 wslc 容器。
 
-Distributions → Idle shutdown & keep-alive → choose a policy → save → shut down WSL when convenient → start the required distribution again.
+下载安装包 `com.dbx.wsl-0.1.2-windows-x64.dbxp`，在 DBX 插件中心安装。该包未签名，需启用“允许安装未签名开发包”。本次按维护者要求替换同名标签与安装包，已安装早先 v0.1.2 的用户请重新下载安装。
 
-保活不是 Windows 防休眠，也不会登录自启。设置全局作用于当前 Windows 用户的发行版；虚拟机设置不适用于 WSL 1 或 wslc 容器。关闭操作会停止 WSL 工作负载；仅保存不会中断它们。建议使用当前 WSL 版本，参见[设置说明](https://github.com/w89588/dbx-plugin-wsl/blob/v0.1.2/docs/idle-policy.md)。
+## 权限与验证
 
-## 安装与反馈 / Install and feedback
+权限仍为 `host.workbench`、`host.events`、`host.storage`、`host.binary`。网页链接交由 Windows `ShellExecuteW` 处理，只接受固定的项目与微软文档地址，不自动上传日志或提交 Issue。
 
-下载 `com.dbx.wsl-0.1.2-windows-x64.dbxp`，在 DBX 插件中心安装。GitHub 资产是未签名候选包，安装时需允许未签名开发包；官方商店更新由维护者审核并签名。
+已完成 Go 单元测试、静态检查、Manifest 预检、浏览器交互回归和隔离配置下的安装包 RPC 验证；实际浏览器启动检查已打开项目 Issues 窗口。
 
-[源码仓库 / Source](https://github.com/w89588/dbx-plugin-wsl) · [BUG 与建议 / Issues](https://github.com/w89588/dbx-plugin-wsl/issues)
-
-## 权限 / Permissions
-
-仍为 `host.workbench`、`host.events`、`host.storage`、`host.binary`。原生 Sidecar 读写当前用户的 WSL 配置，已有文件先备份。用户点击链接后通过 `explorer.exe` 打开固定的项目 / 微软文档 HTTPS 地址；不接受任意 URL，不自动上传日志或创建 Issue。其他 WSL、wslc 与 Windows 辅助进程行为保持原有权限范围。
-
-## 验证 / Validation
-
-Go unit tests and `go vet`; manifest preflight; isolated sidecar RPC checks; browser interaction tests covering policy save, validation, unsaved-editor protection, cancelled shutdown, feedback links, Chinese/English, light/dark and narrow layouts. Tests do not shut down the user's WSL or change the user's live configuration.
+[源码仓库](https://github.com/w89588/dbx-plugin-wsl) · [问题与建议](https://github.com/w89588/dbx-plugin-wsl/issues)

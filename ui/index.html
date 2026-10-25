@@ -1256,12 +1256,14 @@ let dialogCloseTimer = null;
 function showDialog(options) {
   clearTimeout(dialogCloseTimer);
   S.ui.dialog = Object.assign({ actions: [], wide: false, values: {} }, options);
+  const dialog = S.ui.dialog;
   const rootEl = $('#dialog-root');
   if (rootEl) { rootEl.style.opacity = ''; rootEl.style.transition = ''; }
   renderDialog();
   const root = $('#dialog-root'), backdrop = $('#dialog-backdrop');
   root.hidden = false; backdrop.hidden = false;
   requestAnimationFrame(() => {
+    if (S.ui.dialog !== dialog) return;
     backdrop.classList.add('show');
     const first = root.querySelector('input:not([type=hidden]),textarea,select,button[data-role=submit]');
     if (first) first.focus();
@@ -3759,7 +3761,7 @@ function idleCard() {
     (state.mode === 'custom' ? '<label for="idle-instance">' + esc(t('idle.instance')) + '<input id="idle-instance" class="ctl" type="number" min="-1" max="2147483" step="1" data-bind="idle.value" data-key="instanceSeconds" value="' + attr(state.instanceSeconds) + '"' + disabled + '></label><label for="idle-vm">' + esc(t('idle.vm')) + '<input id="idle-vm" class="ctl" type="number" min="1" max="2147483" step="1" data-bind="idle.value" data-key="vmSeconds" value="' + attr(state.vmSeconds) + '"' + disabled + '></label>' : '') + '</div>' +
     '<p class="small muted">' + esc(t('idle.hint')) + '</p>' +
     (policy && !policy.valid ? '<div class="notice warn">' + esc(t('idle.malformed')) + '</div>' : '') +
-    (state.error ? '<div class="notice danger" role="alert" tabindex="-1" id="idle-error">' + esc(state.error) + '</div>' : '') +
+    (state.error ? '<div class="notice danger" role="alert" tabindex="-1" id="idle-error" data-focus-key="idle-error">' + esc(state.error) + '</div>' : '') +
     '<div class="row wrap mt16"><button class="btn primary" data-act="idle.save"' + disabled + '>' + (state.busy ? icon('refresh', 'sm') : icon('save', 'sm')) + esc(state.busy ? t('common.loading') : t('idle.apply')) + '</button>' + projectLink('wslDocs', t('idle.docs')) + '</div>' +
     '<div class="notice ' + (state.restartRequired ? 'warn' : '') + '"><div>' + esc(t(state.restartRequired ? 'idle.pending' : 'idle.restart')) + '<div class="mt8"><button class="btn sm" data-act="dashboard.shutdown">' + esc(t('idle.shutdown')) + '</button></div></div></div></div></section>';
 }
@@ -3825,7 +3827,7 @@ PAGE.settings = {
       '<div class="about-item"><div class="a-label">' + esc(t('settings.about.events')) + '</div><div class="a-value">' + esc(canEvents ? t('misc.yes') : t('misc.no')) + '</div></div></div>' +
       '<div class="mt16"><div class="small muted" style="margin-bottom:6px">' + esc(t('settings.hostCapabilities')) + '</div><div class="cap-list">' + (capsList || '<span class="small faint">—</span>') + '</div></div>' +
       '<div class="mt12"><div class="small muted" style="margin-bottom:6px">' + esc(t('settings.about.permissions')) + '</div><div class="cap-list"><span class="chip">host.workbench</span><span class="chip">host.events</span><span class="chip">host.storage</span><span class="chip">host.binary</span></div></div>' +
-      '<div class="mt16"><h3>' + esc(t('project.title')) + '</h3><p class="small muted">' + esc(t('project.guide')) + '</p><div class="row wrap">' + projectLink('repository', t('project.repo')) + projectLink('issues', t('project.issues')) + projectLink('bug', t('project.bug')) + projectLink('feature', t('project.feature')) + '</div><p class="small mono" style="overflow-wrap:anywhere">' + esc(PROJECT_URL + '/issues') + '</p></div>' +
+      '<div class="mt16"><h3>' + esc(t('project.title')) + '</h3><p class="small muted">' + esc(t('project.guide')) + '</p><div class="row wrap">' + projectLink('repository', t('project.repo')) + projectLink('issues', t('project.issues')) + '</div></div>' +
       '</div></div>';
     const loading = cfg.status === 'loading' && !cfg.wslconfig;
     const editors = loading ? '<div class="card"><div class="sk-card"><div class="sk" style="width:140px;height:14px"></div><div class="sk" style="width:100%;height:190px"></div></div></div>' : editorCard('wslconfig', 'settings.wslconfig.title', 'settings.wslconfig.desc', wslconfig) + (cfg.error ? '<div class="mt12">' + errorBannerHtml(cfg.error, { scope: 'config' }) + '</div>' : '') + editorCard('wslcSettings', 'settings.wslc.title', 'settings.wslc.desc', wslc);

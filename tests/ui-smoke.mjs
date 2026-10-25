@@ -74,6 +74,8 @@ try {
   await wait(`document.querySelector('#idle-mode') && !document.querySelector('#idle-mode').disabled`);
   assert(await evaluate(`document.body.innerText.includes('空闲退出与保活')`));
   assert.equal(await evaluate(`document.querySelector('[data-target="issues"]').getAttribute('href')`),'https://github.com/w89588/dbx-plugin-wsl/issues');
+  assert.equal(await evaluate(`document.querySelectorAll('a[data-target="bug"],a[data-target="feature"]').length`),0,'removed feedback buttons are still present');
+  assert.equal(await evaluate(`Array.from(document.querySelectorAll('p')).some(p=>p.textContent.trim()==='https://github.com/w89588/dbx-plugin-wsl/issues')`),false,'raw Issue URL is still displayed');
   await click('[data-target="issues"]');
   await wait(`window.__calls.some(c=>c.method==='system/project/open' && c.params.target==='issues')`);
   assert(await evaluate(`location.hash==='#/settings'`),'external link navigated the plugin');
@@ -92,7 +94,7 @@ try {
   await click('[data-act="idle.save"]');
   await wait(`document.querySelector('#idle-error')`);
   assert.equal(await evaluate(`window.__calls.filter(c=>c.method==='system/wsl/idle/write').length`),writes,'invalid input reached backend');
-  assert.equal(await evaluate(`document.activeElement.id`),'idle-error');
+  assert.equal(await evaluate(`document.activeElement.id`),'idle-error',await evaluate(`JSON.stringify({active:document.activeElement.outerHTML.slice(0,500),dialogHidden:document.querySelector('#dialog-root').hidden})`));
   await select('#idle-mode','keepAlive');
   await evaluate(`(()=>{const e=document.querySelector('textarea[data-target="wslconfig"]');e.value+='\\n# draft';e.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   await click('[data-act="idle.save"]');

@@ -1,199 +1,177 @@
-# WSL Manager for DBX
+# WSL 管理器（DBX 插件）
 
-English | [简体中文](README.zh-CN.md)
+简体中文 | [English documentation](README.en.md)
 
-A [DBX](https://dbxio.com/) plugin that provides a visual management surface for the Windows Subsystem for Linux:
-WSL distributions (`wsl`) and WSL containers (`wslc`).
+一个 [DBX](https://dbxio.com/) 插件，为 Windows Subsystem for Linux 提供可视化管理界面：
+WSL 发行版（`wsl`）与 WSL 容器（`wslc`）。
 
-The plugin is a DBX package (`.dbxp`) made of a sandboxed workbench UI and a native Go sidecar. The sidecar runs with the
-current user's privileges and invokes local WSL tools and Windows helpers as disclosed below.
+插件是 DBX 包（`.dbxp`），由沙箱工作台 UI 和原生 Go Sidecar 组成。Sidecar 以当前用户权限运行，调用本机的
+WSL 工具与 Windows 辅助程序，详见下方权限披露。
 
-> Latest release: [`v0.1.2`](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.2). GitHub provides unsigned candidates; store updates are reviewed and signed by DBX Store maintainers.
-> The initial store submission [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321) has merged.
+## 功能
 
-## Features
+**WSL 发行版（`wsl`）**
 
-**WSL distributions (`wsl`)**
+- 发行版列表：实时状态、WSL 版本、VHD 磁盘占用。
+- 启动、终止、设为默认、切换 WSL 版本。
+- 默认用户、稀疏 VHD、压缩磁盘、调整容量。
+- 空闲退出与保活：关闭终端后保持发行版运行、恢复默认或自定义超时，自动备份配置并提示重启生效。详见[保活设置](docs/idle-policy.md)。
+- 导出、导入、卸载发行版（二次确认）。
+- 查看 OS 版本、内核、磁盘、IP、`/etc/wsl.conf`。
+- 打开终端 / 资源管理器，在发行版内执行命令。
 
-- List distributions with live state, WSL version and VHD disk usage.
-- Start, terminate, set the default distribution, switch WSL version.
-- Keep distributions running after terminals close, restore default idle shutdown, or set custom timeouts. Configuration is backed up and restart requirements are shown. See the [idle-policy guide](docs/idle-policy.md).
-- Manage default user, sparse VHD, compact and resize.
-- Export, import, and unregister distributions (with confirmation).
-- Inspect OS release, kernel, disk usage, IP addresses and `/etc/wsl.conf`.
-- Open a terminal or Explorer at the distribution, run commands inside it.
+**WSL 容器（`wslc`）**
 
-**WSL containers (`wslc`)**
+- 容器列表与生命周期：运行、启动、停止、重启、终止、删除、清理。
+- 日志（支持跟随）、`exec`、实时资源占用。
+- 镜像：列表、拉取（实时进度）、构建、标记、保存/加载、删除、清理。
+- 数据卷与网络：创建、检查、删除、连接/断开、清理。
+- 实时 `wslc events` 事件流。
 
-- Container list and lifecycle: run, start, stop, restart, kill, remove, prune.
-- Logs (including follow mode), `exec`, live resource statistics.
-- Images: list, pull with live progress, build, tag, save/load, remove, prune.
-- Volumes and networks: create, inspect, remove, connect/disconnect, prune.
-- Live `wslc events` stream.
+**注册表凭据**
 
-**Registry credentials**
+- 在插件内登录/登出容器注册表（等价 `docker login`），支持 Docker Hub、GHCR、阿里云 ACR 及私有 `host:port`。
+- 私有镜像或 Docker Hub 限流导致拉取/构建失败时，会给出分类原因与一键“去登录”入口，并预填 registry。
+- 密码通过 stdin 传给 `wslc`，不持久化、不写日志、不出现在 RPC 错误中。
 
-- Sign in/out to container registries from the plugin (equivalent to `docker login`), including Docker Hub, GHCR,
-  Alibaba Cloud ACR and private `host:port` registries.
-- Pull/build failures caused by missing credentials or Docker Hub rate limits are classified and surface a one-click
-  "sign in" action with the registry prefilled.
-- Passwords are passed to `wslc` over stdin and are never persisted, logged, or emitted in RPC errors.
+**其他**
 
-**Other**
+- 命令控制台：以 argv 方式执行任意 `wsl` / `wslc` 命令（不经过 shell），显示 stdout/stderr 与退出码。
+- 设置：可视化编辑 `.wslconfig` 与 wslc `settings.yaml`，自动备份。
+- 概览仪表盘、明暗主题、中英文界面、带实时日志与取消功能的任务面板。
+- 侧栏与“设置 → 关于”提供 GitHub 仓库和 Issues 入口；BUG 与建议统一在 GitHub Issues 中提交。
 
-- Command console: run arbitrary `wsl` / `wslc` commands as argv (no shell), with stdout/stderr and exit code.
-- Settings: visual editors for `.wslconfig` and wslc `settings.yaml`, with automatic backups.
-- Overview dashboard, dark/light theme, English/Chinese UI, task panel with live logs and cancellation.
+## 截图
 
-## Screenshots
-
-| Overview | Distributions |
+| 概览 | 发行版 |
 | --- | --- |
-| ![Overview](docs/screenshots/overview.webp) | ![Distributions](docs/screenshots/distributions.webp) |
+| ![概览](docs/screenshots/overview.webp) | ![发行版](docs/screenshots/distributions.webp) |
 
-| Containers | Images |
+| 容器 | 镜像 |
 | --- | --- |
-| ![Containers](docs/screenshots/containers.webp) | ![Images](docs/screenshots/images.webp) |
+| ![容器](docs/screenshots/containers.webp) | ![镜像](docs/screenshots/images.webp) |
 
-| Registry credentials | Pull authentication guidance |
+| 注册表凭据 | 拉取认证失败引导 |
 | --- | --- |
-| ![Registry credentials](docs/screenshots/registry-credentials.webp) | ![Pull authentication guidance](docs/screenshots/registry-auth-error.webp) |
+| ![注册表凭据](docs/screenshots/registry-credentials.webp) | ![认证失败引导](docs/screenshots/registry-auth-error.webp) |
 
-| Command console | Settings |
+| 命令控制台 | 设置 |
 | --- | --- |
-| ![Command console](docs/screenshots/command-console.webp) | ![Settings](docs/screenshots/settings.webp) |
+| ![命令控制台](docs/screenshots/command-console.webp) | ![设置](docs/screenshots/settings.webp) |
 
-Dark theme: [overview-dark.png](docs/screenshots/overview-dark.webp).
+暗色主题：[overview-dark.png](docs/screenshots/overview-dark.webp)。
 
-## Requirements
+## 环境要求
 
-| Item | Requirement |
+| 项 | 要求 |
 | --- | --- |
-| OS | Windows 11 with WSL 2 (verified with WSL 3.0.3 and 3.0.4) |
-| DBX | `>= 0.5.68` (verified with 0.6.49) |
-| WSL containers | `wslc` from WSL 3.0+; optional — distribution pages work without it |
-| Build tools | Go 1.22+, Node.js 22+, `@dbx-app/plugin-cli` |
+| 操作系统 | Windows 11 + WSL 2（已验证 WSL 3.0.3 / 3.0.4） |
+| DBX | `>= 0.5.68`（已验证 0.6.49） |
+| WSL 容器 | WSL 3.0+ 的 `wslc`，可选；缺失时发行版功能仍可用 |
+| 构建工具 | Go 1.22+、Node.js 22+、`@dbx-app/plugin-cli` |
 
-## Installation
+## 安装
 
-### From the DBX Store
+### 官方商店
 
-Once the signed release is listed: open DBX → Plugin Center → search for **WSL Manager** → Install.
+DBX → 插件中心 → 搜索 **WSL Manager** → 安装。
 
-### From the GitHub Release (unsigned candidate)
+### GitHub Release（未签名候选）
 
-1. Download `com.dbx.wsl-<version>-windows-x64.dbxp` from [Releases](https://github.com/w89588/dbx-plugin-wsl/releases).
-2. In DBX → Plugin Center → Settings, enable **Allow unsigned development packages**.
-3. Install the local `.dbxp` package.
-4. Open **WSL Manager** from the plugin shortcut, command palette, or Plugin Center.
+1. 从 [Releases](https://github.com/w89588/dbx-plugin-wsl/releases) 下载 `com.dbx.wsl-<version>-windows-x64.dbxp`。
+2. DBX → 插件中心 → 设置，开启 **允许安装未签名开发包**。
+3. 安装本地 `.dbxp`。
+4. 从插件快捷入口、命令面板或插件中心打开 **WSL Manager**。
 
-### From source
+### 从源码构建
 
 ```powershell
 npm install --no-audit --no-fund @dbx-app/plugin-cli
 node node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js package .
 ```
 
-The package is written to `dist/`. See [docs/installation.md](docs/installation.md) for troubleshooting (Chinese).
+产物在 `dist/`。安装与排障见 [docs/installation.md](docs/installation.md)。
 
-## Usage
+## 使用
 
-- **Overview** — WSL/wslc versions, default distribution, running counts, quick actions, recent container events.
-- **Distributions** — manage installed distributions; open the detail drawer for OS/kernel/disk/IP/`wsl.conf`.
-- **Containers** — run containers, follow logs, execute commands, watch live stats.
-- **Images** — pull/build/remove images; open **Registry credentials** when a private image or rate limit requires sign-in.
-- **Volumes / Networks** — manage container storage and networking.
-- **Command console** — run `wsl` / `wslc` commands argument-by-argument.
-- **Events** — live container runtime events.
-- **Settings** — `.wslconfig` / wslc `settings.yaml` editors, refresh interval, danger-zone options.
+- **概览**：WSL/wslc 版本、默认发行版、运行数量、快捷操作、最近容器事件。
+- **发行版**：管理已安装发行版；详情抽屉包含 OS/内核/磁盘/IP/`wsl.conf`。
+- **容器**：运行容器、跟随日志、执行命令、实时统计。
+- **镜像**：拉取/构建/删除镜像；私有镜像或限流时打开 **注册表凭据** 登录。
+- **数据卷 / 网络**：管理容器存储与网络。
+- **命令控制台**：逐参数执行 `wsl` / `wslc` 命令。
+- **事件**：容器运行时实时事件。
+- **设置**：`.wslconfig` / `settings.yaml` 编辑器、刷新间隔、危险操作开关。
 
-## Architecture
+## 架构
 
 ```
-DBX host (sandboxed iframe)
+DBX 宿主（沙箱 iframe）
   │  window.dbxPlugin.invoke / onEvent        Host API 1
   ▼
-ui/index.html (single-file UI, no external assets)
-  │  Sidecar Protocol v1 over stdio (JSON-RPC 2.0)
+ui/index.html（单文件 UI，无外部资源）
+  │  Sidecar Protocol v1（stdio，JSON-RPC 2.0）
   ▼
-Go sidecar (backend/)
-  ├── wsl.exe   distributions
-  └── wslc.exe  WSL containers
+Go Sidecar（backend/）
+  ├── wsl.exe   发行版
+  └── wslc.exe  WSL 容器
 ```
 
-- Long-running operations are jobs with `job/output` / `job/end` events and cancellation.
-- Commands are passed as argv arrays; no shell string concatenation.
-- The UI is a single HTML file with inline CSS/JS, and persists preferences through `dbxPlugin.storage`.
+- 长任务使用 job + `job/output` / `job/end` 事件，可取消。
+- 命令以 argv 数组传递，不拼接 shell 字符串。
+- UI 为单文件内联 CSS/JS，偏好通过 `dbxPlugin.storage` 持久化。
 
-Repository layout:
-
-```
-.
-├── manifest.json            DBX plugin manifest (id, permissions, entrypoints, contributions)
-├── dbx-plugin.toml          packaging configuration
-├── assets/                  plugin icon
-├── ui/index.html            sandboxed workbench UI
-├── backend/                 Go sidecar (+ vendored DBX Go SDK)
-├── docs/                    installation, releasing, RPC contract, screenshots
-└── tools/                   manifest preflight and release metadata helpers
-```
-
-## Development
+## 开发
 
 ```powershell
-# Run the browser development host (builds the Go sidecar; DBX not required)
+# 浏览器开发宿主（会构建 Go Sidecar，无需启动 DBX）
 node ..\node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js dev --path . --port 5190
 
-# Backend tests
+# 后端测试
 cd backend
 go vet ./...; go test ./...
 
-# Manifest install-time rules (menus.group etc.)
+# Manifest 安装期规则预检
 cd ..
 node tools/manifest-check.mjs
 
-# Build an unsigned candidate with release metadata
-node tools/release-meta.mjs --package dist\<package>.dbxp --repo w89588/dbx-plugin-wsl --tag v<version> --publisher w89588
+# 浏览器交互回归（模拟宿主，不修改真实 WSL 设置）
+node tests/ui-smoke.mjs
 ```
 
-The RPC contract between the UI and the sidecar is documented in [docs/rpc-contract.md](docs/rpc-contract.md).
-Release and store submission steps are in [docs/releasing.md](docs/releasing.md).
+UI 与 Sidecar 的 RPC 契约见 [docs/rpc-contract.md](docs/rpc-contract.md)；发布与商店提交流程见
+[docs/releasing.md](docs/releasing.md)。
 
-## Permissions and security
+## 权限与安全
 
-The manifest requests only:
+Manifest 只申请：
 
-- `host.workbench` — open the plugin workbench and set its title.
-- `host.events` — receive sidecar job/event notifications.
-- `host.binary` — execute local WSL tools and Windows helpers through the native sidecar.
-- `host.storage` — persist small UI preferences (active tab, refresh interval, last registry server/username).
+- `host.workbench`：打开插件工作台、设置标题。
+- `host.events`：接收 Sidecar 任务/事件通知。
+- `host.binary`：通过原生 Sidecar 执行本地 WSL 工具和 Windows 辅助程序。
+- `host.storage`：保存少量 UI 偏好（当前页签、刷新间隔、最近 registry server/username）。
 
-No network, filesystem, clipboard, database, connection or AI permissions are requested. The sandboxed UI has no
-direct network access. The native sidecar runs as the current user and invokes `wsl.exe` / `wslc.exe`,
-`wt.exe` (or `cmd.exe` as a terminal fallback), `explorer.exe`, and `taskkill` for process-tree cancellation. Registry
-passwords are written to `wslc login --password-stdin` and never appear in argv, logs, events or errors.
+不申请网络、文件系统、剪贴板、数据库、连接或 AI 权限。沙箱 UI 无直接网络访问。原生 Sidecar 以当前用户权限运行，
+调用 `wsl.exe` / `wslc.exe`、`wt.exe`（终端回退为 `cmd.exe`）、`explorer.exe`，并通过 `taskkill` 取消进程树；注册表密码通过 `wslc login --password-stdin` 传入，不进入 argv、日志、事件或错误信息。
 
-Idle-policy updates write the current user's `.wslconfig` with a backup. Source / feedback buttons use `explorer.exe`
-to open fixed project or Microsoft documentation HTTPS URLs in the default browser; no logs are uploaded or Issues submitted automatically.
+空闲策略写入当前用户的 `.wslconfig`，已有文件先备份。项目与反馈入口通过 Windows `ShellExecuteW` 调用默认浏览器，打开固定的项目或微软文档 HTTPS 地址，不自动上传日志或提交 Issue。
 
-## Limitations
+## 已知限制
 
-- Windows only (`windows-x64`).
-- WSL 1 requires the optional Windows component; version switching otherwise offers WSL 2 only.
-- `wslc` features depend on the installed WSL version.
-- Export/import/build path fields accept Windows paths (no native file picker yet).
-- `wslc` 3.0.3/3.0.4 cannot list signed-in registries, so registry state is confirmed by pull results.
-- The GitHub Release contains an unsigned candidate; the DBX Store build is signed after review.
+- 仅支持 Windows（`windows-x64`）。
+- WSL 1 需要启用 Windows 可选组件；否则版本切换只提供 WSL 2。
+- `wslc` 功能取决于本机 WSL 版本。
+- 导出/导入/构建路径需填写 Windows 路径（暂未接入原生文件选择器）。
+- `wslc` 3.0.3/3.0.4 无法列出已登录注册表，是否登录以拉取结果为准。
 
-## Contributing
+## 贡献
 
-[Source repository](https://github.com/w89588/dbx-plugin-wsl) · [Bugs and suggestions](https://github.com/w89588/dbx-plugin-wsl/issues).
-The sidebar and Settings → About include the same links and dedicated Issue forms. Search existing Issues first;
-include versions, reproduction steps, expected/actual behavior and redacted logs. Never include passwords or tokens.
+源码：[w89588/dbx-plugin-wsl](https://github.com/w89588/dbx-plugin-wsl)。
+功能 BUG 与建议请到[本仓库 Issues](https://github.com/w89588/dbx-plugin-wsl/issues)，先搜索已有记录，再选择 BUG 或建议表单。
+请附版本、复现步骤、预期与实际结果和脱敏日志，不要提交密码或令牌。插件中的反馈按钮只打开网页，不自动提交信息。
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for build/test requirements and the
-submission checklist. Please do not submit plugin source to `t8y2/dbx`; store metadata goes to `t8y2/dbx-store`.
+欢迎反馈问题与建议。构建、测试与贡献要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## License
+## 许可证
 
-[Apache-2.0](LICENSE). The vendored DBX Go plugin SDK (`backend/sdk/dbx-plugin-sdk`) is Apache-2.0 licensed.
+[Apache-2.0](LICENSE)。`backend/sdk/dbx-plugin-sdk` 为 DBX 官方 Apache-2.0 SDK。

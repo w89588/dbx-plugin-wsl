@@ -1,7 +1,6 @@
 package wsl
 
 import (
-	"os/exec"
 	"runtime"
 
 	"github.com/w89588/dbx-plugin-wsl/internal/apperr"
@@ -36,12 +35,8 @@ func (s *Service) OpenProjectLink(target string) (any, *apperr.Error) {
 	if runtime.GOOS != "windows" {
 		return nil, apperr.Unsupported("仅支持 Windows", "请在浏览器中打开项目链接", "")
 	}
-	path, err := exec.LookPath("explorer.exe")
-	if err == nil {
-		err = winenv.StartDetached(path, url)
-	}
-	if err != nil {
-		return nil, apperr.Internal("打开浏览器失败", err.Error())
+	if err := winenv.OpenBrowser(url); err != nil {
+		return nil, apperr.ProcessFailed("打开浏览器失败", "请检查 Windows 的 HTTPS 默认浏览器设置", err.Error())
 	}
 	return map[string]any{"opened": true, "url": url}, nil
 }

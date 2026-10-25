@@ -158,7 +158,7 @@ const off = window.dbxPlugin.onEvent((event) => {
 
 请求 `{ "target": "repository | issues | bug | feature | wslDocs" }`。仅允许这些固定枚举：仓库 `https://github.com/w89588/dbx-plugin-wsl`、其 `/issues`、两个 Issue 表单（`bug_report.yml` / `feature_request.yml`）及微软 WSL 配置文档。
 
-Windows 后端通过 `explorer.exe <固定 HTTPS URL>` 打开默认浏览器，独立 argv，不经过 shell。返回 `{ "opened": true, "url": "..." }` 表示已提交启动；不表示网页加载已完成。未知目标返回 `INVALID_PARAMS`；不接受任意 URL，不自动提交 Issue 或上传日志。
+Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认浏览器，不经过命令行 shell。调用前在同一 OS 线程初始化 COM STA；系统返回失败时提供 HTTPS 默认应用检查提示。返回 `{ "opened": true, "url": "..." }` 表示系统已接受打开请求；不表示网页加载已完成。未知目标返回 `INVALID_PARAMS`；不接受任意 URL，不自动提交 Issue 或上传日志。UI 仅展示仓库、Issues 入口及 WSL 配置文档链接，`bug` / `feature` 枚举为旧客户端保留。
 
 #### `system/info`
 

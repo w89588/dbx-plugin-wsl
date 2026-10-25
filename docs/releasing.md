@@ -2,6 +2,8 @@
 
 本仓库是 WSL Manager 的插件源码仓库；官方商店目录在 **`t8y2/dbx-store`**（不是 `t8y2/dbx`）。本插件只支持 **windows-x64**，因此发布时只产出一个平台包。
 
+Tag 注释、Release 标题与说明、PR 标题与正文默认使用中文；版本标签仍使用 `v<version>`。只有维护者明确要求时才创建或更新 PR，不因推送、打包或发布自动提交。
+
 ## 1. 版本与构建
 
 1. 修改 `manifest.json` 的 `version`，并同步 `backend/main.go` 的 Sidecar 版本、`ui/index.html` 的 `APP_VERSION`、`docs/rpc-contract.md` 版本说明。
@@ -31,13 +33,13 @@
 ## 2. 发布源码 Tag 与未签名候选 Release
 
 ```powershell
-git tag v<version>
+git tag -a v<version> -m "WSL 管理器 v<version>：<本次更新摘要>"
 git push origin main v<version>
 gh release create v<version> `
   dist/<plugin-id>-<version>-windows-x64.dbxp `
   dist/<plugin-id>-<version>-windows-x64.artifact.json `
   dist/release-candidates.json `
-  --title "WSL Manager v<version>" --notes-file RELEASE_NOTES.md
+  --title "WSL 管理器 v<version>" --notes-file RELEASE_NOTES.md
 ```
 
 Release 资产必须是**不可变、带版本号**的 HTTPS URL；`.dbxp` 不能提交进 Git。
@@ -57,9 +59,9 @@ mkdir -p publishers candidates
 # 把 dist/store 下生成的两个文件复制到对应目录
 node scripts/validate.mjs   # 预期仅有 open candidate(s) awaiting DBX Store signing（等待维护者签名）
 git add publishers/<publisher-id>.json candidates/<plugin-id>.json
-git commit -m "Add <name> <version> candidate"
+git commit -m "提交 <name> <version> 候选包"
 git push origin add-<plugin-id>-<version>
-gh pr create --repo t8y2/dbx-store --base main --head w89588:add-<plugin-id>-<version> --title "..." --body-file ...
+gh pr create --repo t8y2/dbx-store --base main --head w89588:add-<plugin-id>-<version> --title "更新 WSL 管理器至 <version>" --body-file <中文说明文件>
 ```
 
 PR 描述需说明：插件能力、权限、数据访问、网络访问、原生 Sidecar 行为（见 `t8y2/dbx-store/CONTRIBUTING.md`）。
