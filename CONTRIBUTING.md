@@ -27,6 +27,12 @@ go vet ./...; go test ./...
 # Manifest install-time rules (host word lists, entrypoints, menu references)
 cd ..
 node tools/manifest-check.mjs
+
+# Browser regression checks (mock host; does not change live WSL configuration)
+node tests/ui-smoke.mjs
+
+# After packaging (requires Python 3): real stdio RPC against an isolated profile
+node tests/sidecar-idle.mjs
 ```
 
 `node ..\node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js dev --path . --port 5190` starts the browser development

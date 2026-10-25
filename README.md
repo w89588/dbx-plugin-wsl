@@ -8,9 +8,8 @@ WSL distributions (`wsl`) and WSL containers (`wslc`).
 The plugin is a DBX package (`.dbxp`) made of a sandboxed workbench UI and a native Go sidecar. The sidecar runs with the
 current user's privileges and invokes local WSL tools and Windows helpers as disclosed below.
 
-> Status: `v0.1.1` is published as an unsigned candidate on the [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.1).
-> The official store submission is open as [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321) and is
-> awaiting review and signing by the DBX Store maintainers.
+> Latest release: [`v0.1.2`](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.2). GitHub provides unsigned candidates; store updates are reviewed and signed by DBX Store maintainers.
+> The initial store submission [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321) has merged.
 
 ## Features
 
@@ -18,6 +17,7 @@ current user's privileges and invokes local WSL tools and Windows helpers as dis
 
 - List distributions with live state, WSL version and VHD disk usage.
 - Start, terminate, set the default distribution, switch WSL version.
+- Keep distributions running after terminals close, restore default idle shutdown, or set custom timeouts. Configuration is backed up and restart requirements are shown. See the [idle-policy guide](docs/idle-policy.md).
 - Manage default user, sparse VHD, compact and resize.
 - Export, import, and unregister distributions (with confirmation).
 - Inspect OS release, kernel, disk usage, IP addresses and `/etc/wsl.conf`.
@@ -173,6 +173,9 @@ direct network access. The native sidecar runs as the current user and invokes `
 `wt.exe` (or `cmd.exe` as a terminal fallback), `explorer.exe`, and `taskkill` for process-tree cancellation. Registry
 passwords are written to `wslc login --password-stdin` and never appear in argv, logs, events or errors.
 
+Idle-policy updates write the current user's `.wslconfig` with a backup. Source / feedback buttons use `explorer.exe`
+to open fixed project or Microsoft documentation HTTPS URLs in the default browser; no logs are uploaded or Issues submitted automatically.
+
 ## Limitations
 
 - Windows only (`windows-x64`).
@@ -183,6 +186,10 @@ passwords are written to `wslc login --password-stdin` and never appear in argv,
 - The GitHub Release contains an unsigned candidate; the DBX Store build is signed after review.
 
 ## Contributing
+
+[Source repository](https://github.com/w89588/dbx-plugin-wsl) · [Bugs and suggestions](https://github.com/w89588/dbx-plugin-wsl/issues).
+The sidebar and Settings → About include the same links and dedicated Issue forms. Search existing Issues first;
+include versions, reproduction steps, expected/actual behavior and redacted logs. Never include passwords or tokens.
 
 Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for build/test requirements and the
 submission checklist. Please do not submit plugin source to `t8y2/dbx`; store metadata goes to `t8y2/dbx-store`.

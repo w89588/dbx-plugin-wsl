@@ -8,8 +8,8 @@ WSL 发行版（`wsl`）与 WSL 容器（`wslc`）。
 插件是 DBX 包（`.dbxp`），由沙箱工作台 UI 和原生 Go Sidecar 组成。Sidecar 以当前用户权限运行，调用本机的
 WSL 工具与 Windows 辅助程序，详见下方权限披露。
 
-> 状态：`v0.1.1` 已在 [GitHub Release](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.1) 发布未签名候选包；
-> 官方商店提交为 [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321)，等待 DBX Store 维护者审核与签名。
+> 最新版本：[`v0.1.2`](https://github.com/w89588/dbx-plugin-wsl/releases/tag/v0.1.2)。GitHub 提供未签名候选包，官方商店更新由 DBX Store 维护者审核、签名。
+> 首次上架 PR [t8y2/dbx-store#321](https://github.com/t8y2/dbx-store/pull/321) 已合并。
 
 ## 功能
 
@@ -18,6 +18,7 @@ WSL 工具与 Windows 辅助程序，详见下方权限披露。
 - 发行版列表：实时状态、WSL 版本、VHD 磁盘占用。
 - 启动、终止、设为默认、切换 WSL 版本。
 - 默认用户、稀疏 VHD、压缩磁盘、调整容量。
+- 空闲退出与保活：关闭终端后保持发行版运行、恢复默认或自定义超时，自动备份配置并提示重启生效。详见[保活设置](docs/idle-policy.md)。
 - 导出、导入、卸载发行版（二次确认）。
 - 查看 OS 版本、内核、磁盘、IP、`/etc/wsl.conf`。
 - 打开终端 / 资源管理器，在发行版内执行命令。
@@ -41,6 +42,7 @@ WSL 工具与 Windows 辅助程序，详见下方权限披露。
 - 命令控制台：以 argv 方式执行任意 `wsl` / `wslc` 命令（不经过 shell），显示 stdout/stderr 与退出码。
 - 设置：可视化编辑 `.wslconfig` 与 wslc `settings.yaml`，自动备份。
 - 概览仪表盘、明暗主题、中英文界面、带实时日志与取消功能的任务面板。
+- 侧栏与“设置 → 关于”提供 GitHub 仓库、Issues、功能 BUG 和意见反馈入口。
 
 ## 截图
 
@@ -136,8 +138,8 @@ go vet ./...; go test ./...
 cd ..
 node tools/manifest-check.mjs
 
-# 端到端：Sidecar RPC 探针 + headless Chrome UI 校验
-node tests/run-all.mjs
+# 浏览器交互回归（模拟宿主，不修改真实 WSL 设置）
+node tests/ui-smoke.mjs
 ```
 
 UI 与 Sidecar 的 RPC 契约见 [docs/rpc-contract.md](docs/rpc-contract.md)；发布与商店提交流程见
@@ -155,6 +157,8 @@ Manifest 只申请：
 不申请网络、文件系统、剪贴板、数据库、连接或 AI 权限。沙箱 UI 无直接网络访问。原生 Sidecar 以当前用户权限运行，
 调用 `wsl.exe` / `wslc.exe`、`wt.exe`（终端回退为 `cmd.exe`）、`explorer.exe`，并通过 `taskkill` 取消进程树；注册表密码通过 `wslc login --password-stdin` 传入，不进入 argv、日志、事件或错误信息。
 
+空闲策略写入当前用户的 `.wslconfig`，已有文件先备份。项目与反馈入口通过 `explorer.exe` 打开固定的项目或微软文档 HTTPS 地址，不自动上传日志或提交 Issue。
+
 ## 已知限制
 
 - 仅支持 Windows（`windows-x64`）。
@@ -165,6 +169,10 @@ Manifest 只申请：
 - GitHub Release 中为未签名候选包；DBX 商店版本由官方审核后签名。
 
 ## 贡献
+
+源码：[w89588/dbx-plugin-wsl](https://github.com/w89588/dbx-plugin-wsl)。
+功能 BUG 与建议请到[本仓库 Issues](https://github.com/w89588/dbx-plugin-wsl/issues)，先搜索已有记录，再选择 BUG 或建议表单。
+请附版本、复现步骤、预期与实际结果和脱敏日志，不要提交密码或令牌。插件中的反馈按钮只打开网页，不自动提交信息。
 
 欢迎 Issue 与 Pull Request。构建/测试要求与提交清单见 [CONTRIBUTING.md](CONTRIBUTING.md)。请勿向 `t8y2/dbx`
 提交插件源码；商店元数据提交到 `t8y2/dbx-store`。

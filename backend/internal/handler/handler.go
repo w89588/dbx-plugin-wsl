@@ -66,10 +66,26 @@ func (h *Handler) dispatch(
 	// ---- system ----
 	case "system/info":
 		return h.WSL.SystemInfo(ctx)
+	case "system/project/open":
+		var request struct {
+			Target string `json:"target"`
+		}
+		if appErr := decodeParams(params, &request); appErr != nil {
+			return nil, appErr
+		}
+		return h.WSL.OpenProjectLink(request.Target)
 	case "system/wsl/status":
 		return h.WSL.WSLStatus(ctx)
 	case "system/config/read":
 		return h.WSL.ConfigRead(ctx)
+	case "system/wsl/idle/read":
+		return h.WSL.IdleRead()
+	case "system/wsl/idle/write":
+		var request wsl.IdleWriteParams
+		if appErr := decodeParams(params, &request); appErr != nil {
+			return nil, appErr
+		}
+		return h.WSL.IdleWrite(request)
 	case "system/config/write":
 		var request wsl.ConfigWriteParams
 		if appErr := decodeParams(params, &request); appErr != nil {

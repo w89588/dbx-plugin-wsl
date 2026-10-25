@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.1.1`
+- 版本：`0.1.2`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.1"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.2"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -131,6 +131,34 @@ const off = window.dbxPlugin.onEvent((event) => {
 ## 4. 方法
 
 ### 4.1 system
+
+#### `system/wsl/idle/read`（v0.1.2）
+
+无参数；只读取 `%USERPROFILE%/.wslconfig`，不启动 WSL。返回：
+
+```json
+{ "path": "C:\\Users\\user\\.wslconfig", "revision": "<sha256>", "mode": "default", "valid": true, "instanceIdleTimeoutMs": 15000, "vmIdleTimeoutMs": 60000 }
+```
+
+`mode` 为 `default | keepAlive | custom`。未配置的值使用 WSL 文档默认值；`valid=false` 表示格式异常、重复超时键或无效值，UI 必须提示检查原始配置。这里只报告磁盘上的配置，不能声称运行中的 WSL 已应用。`revision` 包含文件原始字节及存在状态。
+
+#### `system/wsl/idle/write`（v0.1.2）
+
+请求 `{ "mode": "keepAlive | default | custom", "expectedRevision": "<read 返回的 revision>", "instanceSeconds": 15, "vmSeconds": 60 }`。
+
+- `keepAlive`：只设置 `[general] instanceIdleTimeout=-1`，保留虚拟机超时。
+- `default`：移除 `[general] instanceIdleTimeout` 和 `[wsl2] vmIdleTimeout` 的覆盖项。
+- `custom`：两项秒数必填，发行版允许 `-1` 或 `1..2147483`，虚拟机允许 `1..2147483`；写入时转换成毫秒（`-1` 保持不变）。
+- 原文件需保留无关配置、注释与换行风格；复用配置备份和临时文件替换。策略读改写与普通配置写入串行执行。
+- 缺少/过期的 revision 返回 `CONFLICT`，非法参数或格式异常返回 `INVALID_PARAMS`，不会写入。无变更时不创建备份。
+- 返回 `{ "path": "...", "backupPath": null, "changed": true, "restartRequired": true, "policy": { ...read 同结构... } }`。已有文件的 `backupPath` 为备份路径；`changed=false` 时 `restartRequired=false`，但不保证运行实例已经加载该配置。
+- 保存不得自动停止/重启 WSL。UI 明确提示影响范围，关闭 WSL 仍走既有确认流程；编辑器有未保存的 `.wslconfig` 修改时，UI 阻止策略写入。
+
+#### `system/project/open`（v0.1.2）
+
+请求 `{ "target": "repository | issues | bug | feature | wslDocs" }`。仅允许这些固定枚举：仓库 `https://github.com/w89588/dbx-plugin-wsl`、其 `/issues`、两个 Issue 表单（`bug_report.yml` / `feature_request.yml`）及微软 WSL 配置文档。
+
+Windows 后端通过 `explorer.exe <固定 HTTPS URL>` 打开默认浏览器，独立 argv，不经过 shell。返回 `{ "opened": true, "url": "..." }` 表示已提交启动；不表示网页加载已完成。未知目标返回 `INVALID_PARAMS`；不接受任意 URL，不自动提交 Issue 或上传日志。
 
 #### `system/info`
 

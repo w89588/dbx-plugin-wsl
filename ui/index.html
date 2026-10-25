@@ -116,6 +116,15 @@ svg.icon.lg{ width:20px; height:20px; }
 .nav-item .nav-text{ font-size:12.5px; overflow:hidden; text-overflow:ellipsis; }
 .nav-item .nav-count{ margin-left:auto; font-size:10.5px; font-weight:700; background:color-mix(in srgb, var(--primary) 14%, transparent); color:var(--primary); border-radius:99px; padding:1px 6px; }
 .side-foot{ padding:10px; border-top:1px solid var(--line-2); display:flex; flex-direction:column; gap:8px; }
+.side-links{ display:flex; flex-wrap:wrap; gap:6px; }
+.sidebar-collapsed .side-links{ display:none; }
+.idle-card{ grid-column:1/-1; }
+.idle-form{ display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin:16px 0; }
+.idle-form label{ display:flex; flex:1 1 180px; flex-direction:column; gap:7px; font-size:13px; }
+.idle-form .ctl{ width:100%; min-height:40px; }
+.idle-card p{ line-height:1.65; }
+.idle-card .notice{ margin-top:12px; }
+.idle-card a,.side-links a{ text-decoration:none; }
 .side-status{ display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:9px; background:color-mix(in srgb, var(--text) 4%, transparent); min-width:0; }
 .side-status .dot{ width:7px; height:7px; border-radius:50%; flex:none; background:var(--slate); }
 .side-status.ok .dot{ background:var(--green); box-shadow:0 0 0 3px var(--green-soft); }
@@ -706,6 +715,7 @@ tr:hover .row-actions, tr:focus-within .row-actions{ opacity:1; }
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
+      <div class="side-links"><a class="btn xs ghost" href="https://github.com/w89588/dbx-plugin-wsl" data-act="project.open" data-target="repository" data-i18n="project.repo">GitHub</a><a class="btn xs ghost" href="https://github.com/w89588/dbx-plugin-wsl/issues" data-act="project.open" data-target="issues" data-i18n="project.issues">Issues</a></div>
       <div class="side-status" id="side-status"><span class="dot"></span><span class="st-text" id="side-status-text">Starting…</span></div>
       <button class="collapse-btn" type="button" data-act="ui.toggleSidebar" title="Collapse sidebar">
         <svg class="icon sm"><use href="#i-chevron-left"/></svg><span id="collapse-label">Collapse</span>
@@ -753,7 +763,8 @@ tr:hover .row-actions, tr:focus-within .row-actions{ opacity:1; }
    0. Constants
    ============================================================ */
 const HOST = window.dbxPlugin;
-const APP_VERSION = '0.1.1';
+const APP_VERSION = '0.1.2';
+const PROJECT_URL = 'https://github.com/w89588/dbx-plugin-wsl';
 const JOB_LINE_LIMIT = 2000;
 const JOB_BYTE_LIMIT = 512 * 1024;
 const EVENT_LIMIT = 500;
@@ -764,6 +775,11 @@ const ROUTES = ['dashboard','distros','containers','images','volumes','networks'
    ============================================================ */
 const DICT = {
   en: {
+    'project.title':'Source & feedback','project.repo':'GitHub repository','project.issues':'Issues & feedback','project.bug':'Report a bug','project.feature':'Suggest a feature','project.guide':'Search existing Issues first. For bugs, include plugin / DBX / WSL versions, reproduction steps, expected and actual results, and redacted logs. For suggestions, explain your use case. Never include passwords or tokens.',
+    'idle.title':'Idle shutdown & keep-alive','idle.intro':'Keep distributions running after you close the terminal. WSL has separate idle timers: distributions default to 15 seconds; the WSL 2 VM defaults to 60 seconds after all distributions stop. This is idle shutdown, not Windows sleep.',
+    'idle.scope':'Applies globally to this Windows user’s WSL distributions; WSL 2 VM settings do not apply to WSL 1 or wslc containers. Settings persist after DBX closes. This does not start WSL at login, block manual shutdown, or prevent Windows sleep. Keeping WSL running uses memory and power.',
+    'idle.policy':'Policy','idle.keepAlive':'Keep distributions running','idle.default':'Restore WSL defaults','idle.custom':'Custom timeouts','idle.instance':'Distribution idle timeout (seconds)','idle.vm':'WSL 2 VM idle timeout (seconds)','idle.hint':'Use -1 for distributions to disable idle shutdown. VM timeout: 1–2147483 seconds. Keep-alive changes only the distribution timer and preserves your VM timeout.',
+    'idle.saved':'Saved policy','idle.defaults':'WSL defaults','idle.current':'Distribution: {instance}; VM: {vm}. These are saved values, not proof that a running instance has reloaded them.','idle.never':'never shut down on idle','idle.seconds':'{n} seconds','idle.apply':'Save idle policy','idle.reload':'Reload saved policy','idle.restart':'After saving, close WSL when convenient and start the required distribution again. All WSL workloads will stop during shutdown; saving alone does not interrupt them.','idle.pending':'Configuration saved. Shut down WSL and start your distribution again to apply it.','idle.shutdown':'Shut down WSL to apply','idle.invalid':'Enter whole seconds: distribution -1 or 1–2147483; VM 1–2147483.','idle.dirty':'The .wslconfig editor has unsaved changes. Save or reload it before changing the idle policy.','idle.malformed':'Duplicate keys, invalid values or a malformed file were found. Review the configuration editor before applying a policy.','idle.docs':'WSL configuration guide','idle.noChange':'This policy is already saved. A running WSL instance may still need to be restarted.',
     'app.name':'WSL Manager','app.tagline':'Distributions & WSL containers','app.unsupported':'This plugin needs the DBX workbench host.',
     'nav.dashboard':'Overview','nav.distros':'Distributions','nav.containers':'Containers','nav.images':'Images','nav.volumes':'Volumes','nav.networks':'Networks','nav.console':'Console','nav.events':'Events','nav.settings':'Settings',
     'nav.section.manage':'Manage','nav.section.system':'System','nav.collapse':'Collapse','nav.expand':'Expand',
@@ -825,6 +841,11 @@ const DICT = {
     'misc.unitB':'B','misc.unitKB':'KB','misc.unitMB':'MB','misc.unitGB':'GB','misc.unitTB':'TB','misc.yes':'Yes','misc.no':'No','misc.refreshing':'Refreshing…','misc.filtered':'{shown} of {total}','misc.runningCount':'{n} running','misc.ofTotal':'of {total}'
   },
   zh: {
+    'project.title':'源码与反馈','project.repo':'GitHub 仓库','project.issues':'Issues 与反馈','project.bug':'报告功能 BUG','project.feature':'提出功能建议','project.guide':'请先搜索已有 Issue。报告 BUG 时请附插件 / DBX / WSL 版本、复现步骤、预期与实际结果以及脱敏日志；建议请说明使用场景。请勿提交密码或令牌。',
+    'idle.title':'空闲退出与保活','idle.intro':'关闭终端后仍让发行版保持运行。WSL 有两个空闲计时器：发行版默认 15 秒；所有发行版停止后，WSL 2 虚拟机默认等待 60 秒退出。这是空闲退出，不是 Windows 系统休眠。',
+    'idle.scope':'全局作用于当前 Windows 用户的 WSL 发行版；WSL 2 虚拟机设置不适用于 WSL 1 或 wslc 容器。关闭 DBX 后配置仍保留。此设置不会在登录时启动 WSL，也不阻止手动关闭或 Windows 休眠。保持运行会持续占用内存与电量。',
+    'idle.policy':'运行策略','idle.keepAlive':'保持发行版运行（不因空闲退出）','idle.default':'恢复 WSL 默认策略','idle.custom':'自定义空闲超时','idle.instance':'发行版空闲超时（秒）','idle.vm':'WSL 2 虚拟机空闲超时（秒）','idle.hint':'发行版填 -1 表示永不因空闲退出。虚拟机可填 1–2147483 秒。保活策略只修改发行版计时器，保留原有虚拟机超时。',
+    'idle.saved':'已保存策略','idle.defaults':'WSL 默认策略','idle.current':'发行版：{instance}；虚拟机：{vm}。这里显示已保存值，不代表运行中的实例已重新加载。','idle.never':'永不因空闲退出','idle.seconds':'{n} 秒','idle.apply':'保存空闲策略','idle.reload':'重新读取策略','idle.restart':'保存后，请在合适时机关闭 WSL，再启动需要的发行版。关闭会停止全部 WSL 工作负载；仅保存配置不会中断它们。','idle.pending':'配置已保存，需关闭 WSL 并重新启动发行版后生效。','idle.shutdown':'关闭 WSL 以应用配置','idle.invalid':'请输入整数秒数：发行版为 -1 或 1–2147483；虚拟机为 1–2147483。','idle.dirty':'.wslconfig 编辑器有未保存的修改，请先保存或重新载入，再修改空闲策略。','idle.malformed':'发现重复键、无效值或配置格式异常，请先检查下方配置编辑器。','idle.docs':'WSL 配置说明','idle.noChange':'该策略已经保存；正在运行的 WSL 仍可能需要重启才能生效。',
     'app.name':'WSL 管理器','app.tagline':'发行版与 WSL 容器','app.unsupported':'此插件需要 DBX 工作台宿主。',
     'nav.dashboard':'概览','nav.distros':'发行版','nav.containers':'容器','nav.images':'镜像','nav.volumes':'数据卷','nav.networks':'网络','nav.console':'命令控制台','nav.events':'事件','nav.settings':'设置',
     'nav.section.manage':'管理','nav.section.system':'系统','nav.collapse':'收起','nav.expand':'展开',
@@ -1034,6 +1055,7 @@ const S = {
   networks: { status: 'idle', items: [], error: null, at: 0 },
   presets: { status: 'idle', items: [], error: null },
   config: { status: 'idle', wslconfig: null, wslcSettings: null, error: null, at: 0 },
+  idle: { status: 'idle', policy: null, mode: 'keepAlive', instanceSeconds: 15, vmSeconds: 60, busy: false, error: null, restartRequired: false },
   online: { status: 'idle', items: [], error: null },
   jobs: new Map(),
   events: { active: false, jobId: null, list: [], paused: false, at: 0 },
@@ -1969,8 +1991,8 @@ async function loadConfig(options) {
   if (!(options && options.silent)) requestRender();
   try {
     const res = await invoke('system/config/read', {}, { timeoutMs: 60000 });
-    state.wslconfig = res && res.wslconfig ? res.wslconfig : null;
-    state.wslcSettings = res && res.wslcSettings ? res.wslcSettings : null;
+    if (!configDirty.wslconfig) state.wslconfig = res && res.wslconfig ? res.wslconfig : null;
+    if (!configDirty.wslcSettings) state.wslcSettings = res && res.wslcSettings ? res.wslcSettings : null;
     state.error = null; state.status = 'ready';
   } catch (error) { state.error = toError(error); state.status = 'error'; }
   state.at = Date.now();
@@ -2438,6 +2460,7 @@ PAGE.distros = {
     const toolbar = '<div class="toolbar">' +
       '<button class="btn primary" type="button" data-act="distros.install">' + icon('plus', 'sm') + esc(t('distros.install')) + '</button>' +
       '<button class="btn" type="button" data-act="distros.import">' + icon('upload', 'sm') + esc(t('distros.import')) + '</button>' +
+      '<button class="btn" type="button" data-act="idle.settings">' + icon('sliders', 'sm') + esc(t('idle.title')) + '</button>' +
       '<div class="search">' + icon('search') + '<input type="search" data-bind="filter" data-key="distros" data-focus-key="filter-distros" value="' + attr(query) + '" placeholder="' + attr(t('distros.search')) + '" aria-label="' + attr(t('distros.search')) + '" /></div>' +
       '<span class="grow"></span>' + filterInfo(items.length, (state.items || []).length) +
       '<span class="small faint nowrap">' + fmtNum(items.length) + ' ' + esc(t('nav.distros')) + '</span>' +
@@ -3708,9 +3731,63 @@ function openEventDetail(idx) {
 /* ============================================================
    23. Settings page
    ============================================================ */
+function projectLink(target, label) {
+  const urls = { repository: PROJECT_URL, issues: PROJECT_URL + '/issues', bug: PROJECT_URL + '/issues/new?template=bug_report.yml', feature: PROJECT_URL + '/issues/new?template=feature_request.yml', wslDocs: 'https://learn.microsoft.com/en-us/windows/wsl/wsl-config' };
+  return '<a class="btn sm" href="' + attr(urls[target]) + '" data-act="project.open" data-target="' + attr(target) + '">' + icon('link', 'sm') + esc(label) + '</a>';
+}
+async function loadIdle() {
+  const state = S.idle;
+  if (state.status === 'loading' || state.busy) return;
+  state.status = 'loading'; requestRender();
+  try {
+    state.policy = await invoke('system/wsl/idle/read', {});
+    state.mode = state.policy.mode;
+    state.instanceSeconds = state.policy.instanceIdleTimeoutMs === -1 ? -1 : state.policy.instanceIdleTimeoutMs / 1000;
+    state.vmSeconds = state.policy.vmIdleTimeoutMs / 1000;
+    state.error = null; state.status = 'ready';
+  } catch (error) { state.error = error.message; state.status = 'error'; }
+  requestRender();
+}
+function idleCard() {
+  const state = S.idle, policy = state.policy;
+  const disabled = state.busy || state.status !== 'ready' ? ' disabled' : '';
+  const timeout = (ms) => ms === -1 ? t('idle.never') : t('idle.seconds', { n: ms / 1000 });
+  return '<section class="card idle-card" aria-labelledby="idle-title" aria-busy="' + (state.busy || state.status === 'loading') + '"><div class="card-head"><h3 id="idle-title">' + esc(t('idle.title')) + '</h3><span class="spacer"></span><button class="btn sm ghost" data-act="idle.reload"' + (state.busy ? ' disabled' : '') + '>' + esc(t('idle.reload')) + '</button></div><div class="card-body">' +
+    '<p>' + esc(t('idle.intro')) + '</p><p class="small muted">' + esc(t('idle.scope')) + '</p>' +
+    (policy ? '<div class="notice"><div><strong>' + esc(t('idle.saved')) + ': ' + esc(t('idle.' + (policy.mode === 'default' ? 'defaults' : policy.mode))) + '</strong><br>' + esc(t('idle.current', { instance: timeout(policy.instanceIdleTimeoutMs), vm: timeout(policy.vmIdleTimeoutMs) })) + '</div></div>' : '<p>' + esc(t('common.loading')) + '</p>') +
+    '<div class="idle-form"><label for="idle-mode">' + esc(t('idle.policy')) + '<select id="idle-mode" class="ctl" data-change="idle.mode" data-focus-key="idle-mode"' + disabled + '>' + ['keepAlive', 'default', 'custom'].map(mode => '<option value="' + mode + '"' + (state.mode === mode ? ' selected' : '') + '>' + esc(t('idle.' + mode)) + '</option>').join('') + '</select></label>' +
+    (state.mode === 'custom' ? '<label for="idle-instance">' + esc(t('idle.instance')) + '<input id="idle-instance" class="ctl" type="number" min="-1" max="2147483" step="1" data-bind="idle.value" data-key="instanceSeconds" value="' + attr(state.instanceSeconds) + '"' + disabled + '></label><label for="idle-vm">' + esc(t('idle.vm')) + '<input id="idle-vm" class="ctl" type="number" min="1" max="2147483" step="1" data-bind="idle.value" data-key="vmSeconds" value="' + attr(state.vmSeconds) + '"' + disabled + '></label>' : '') + '</div>' +
+    '<p class="small muted">' + esc(t('idle.hint')) + '</p>' +
+    (policy && !policy.valid ? '<div class="notice warn">' + esc(t('idle.malformed')) + '</div>' : '') +
+    (state.error ? '<div class="notice danger" role="alert" tabindex="-1" id="idle-error">' + esc(state.error) + '</div>' : '') +
+    '<div class="row wrap mt16"><button class="btn primary" data-act="idle.save"' + disabled + '>' + (state.busy ? icon('refresh', 'sm') : icon('save', 'sm')) + esc(state.busy ? t('common.loading') : t('idle.apply')) + '</button>' + projectLink('wslDocs', t('idle.docs')) + '</div>' +
+    '<div class="notice ' + (state.restartRequired ? 'warn' : '') + '"><div>' + esc(t(state.restartRequired ? 'idle.pending' : 'idle.restart')) + '<div class="mt8"><button class="btn sm" data-act="dashboard.shutdown">' + esc(t('idle.shutdown')) + '</button></div></div></div></div></section>';
+}
+async function saveIdle() {
+  const state = S.idle;
+  if (state.busy || state.status !== 'ready') return;
+  state.error = null;
+  const params = { mode: state.mode, expectedRevision: state.policy.revision };
+  if (configDirty.wslconfig) state.error = t('idle.dirty');
+  if (state.mode === 'custom') {
+    params.instanceSeconds = Number(state.instanceSeconds);
+    params.vmSeconds = Number(state.vmSeconds);
+    if (!Number.isInteger(params.instanceSeconds) || (params.instanceSeconds !== -1 && (params.instanceSeconds < 1 || params.instanceSeconds > 2147483)) || !Number.isInteger(params.vmSeconds) || params.vmSeconds < 1 || params.vmSeconds > 2147483) state.error = t('idle.invalid');
+  }
+  if (state.error) { renderPage({ force: true }); $('#idle-error').focus(); return; }
+  state.busy = true; renderPage({ force: true });
+  try {
+    const result = await invoke('system/wsl/idle/write', params);
+    state.policy = result.policy;
+    state.restartRequired = state.restartRequired || result.restartRequired;
+    toast('success', result.changed ? t('idle.pending') : t('idle.noChange'), result.backupPath || '');
+    await loadConfig({ silent: true });
+  } catch (error) { state.error = error.message; }
+  finally { state.busy = false; renderPage({ force: true }); if (state.error && $('#idle-error')) $('#idle-error').focus(); }
+}
 PAGE.settings = {
-  enter() { if (S.config.status === 'idle') loadConfig(); },
-  refresh() { loadConfig({ silent: true }); },
+  enter() { if (S.config.status === 'idle') loadConfig(); loadIdle(); },
+  refresh() { loadConfig({ silent: true }); loadIdle(); },
   html() {
     const cfg = S.config;
     const capsList = Object.keys(caps).filter((key) => caps[key]).map((key) => '<span class="chip">' + esc(key) + '</span>').join('');
@@ -3747,11 +3824,12 @@ PAGE.settings = {
       '<div class="about-item"><div class="a-label">' + esc(t('settings.about.storage')) + '</div><div class="a-value">' + esc(canStore ? (S.storageOk ? t('misc.yes') : t('misc.no')) : t('misc.no')) + '</div></div>' +
       '<div class="about-item"><div class="a-label">' + esc(t('settings.about.events')) + '</div><div class="a-value">' + esc(canEvents ? t('misc.yes') : t('misc.no')) + '</div></div></div>' +
       '<div class="mt16"><div class="small muted" style="margin-bottom:6px">' + esc(t('settings.hostCapabilities')) + '</div><div class="cap-list">' + (capsList || '<span class="small faint">—</span>') + '</div></div>' +
-      '<div class="mt12"><div class="small muted" style="margin-bottom:6px">' + esc(t('settings.about.permissions')) + '</div><div class="cap-list"><span class="chip">host.workbench</span><span class="chip">host.events</span><span class="chip">host.storage</span></div></div>' +
+      '<div class="mt12"><div class="small muted" style="margin-bottom:6px">' + esc(t('settings.about.permissions')) + '</div><div class="cap-list"><span class="chip">host.workbench</span><span class="chip">host.events</span><span class="chip">host.storage</span><span class="chip">host.binary</span></div></div>' +
+      '<div class="mt16"><h3>' + esc(t('project.title')) + '</h3><p class="small muted">' + esc(t('project.guide')) + '</p><div class="row wrap">' + projectLink('repository', t('project.repo')) + projectLink('issues', t('project.issues')) + projectLink('bug', t('project.bug')) + projectLink('feature', t('project.feature')) + '</div><p class="small mono" style="overflow-wrap:anywhere">' + esc(PROJECT_URL + '/issues') + '</p></div>' +
       '</div></div>';
     const loading = cfg.status === 'loading' && !cfg.wslconfig;
     const editors = loading ? '<div class="card"><div class="sk-card"><div class="sk" style="width:140px;height:14px"></div><div class="sk" style="width:100%;height:190px"></div></div></div>' : editorCard('wslconfig', 'settings.wslconfig.title', 'settings.wslconfig.desc', wslconfig) + (cfg.error ? '<div class="mt12">' + errorBannerHtml(cfg.error, { scope: 'config' }) + '</div>' : '') + editorCard('wslcSettings', 'settings.wslc.title', 'settings.wslc.desc', wslc);
-    return pageShell('<div class="settings-grid">' + general + editors + about + '</div>');
+    return pageShell('<div class="settings-grid">' + idleCard() + general + editors + about + '</div>');
   },
 };
 let configDirty = {};
@@ -3780,6 +3858,7 @@ async function saveConfigFile(target) {
     markConfigDirty(target, false);
     if (res && res.backupPath) toast('success', t('settings.saved', { path: res.backupPath }));
     else toast('success', t('settings.savedNoBackup'));
+    if (target === 'wslconfig') { S.idle.restartRequired = true; loadIdle(); }
     loadConfig({ silent: true });
   } catch (error) { toast('error', t('err.title'), error.message); }
 }
@@ -3789,6 +3868,13 @@ async function saveConfigFile(target) {
 async function handleAction(act, el) {
   const data = el.dataset;
   switch (act) {
+    case 'project.open':
+      try { await invoke('system/project/open', { target: data.target }); }
+      catch (error) { toast('error', t('err.title'), error.message); }
+      return;
+    case 'idle.settings': navigate('settings'); return;
+    case 'idle.reload': await loadIdle(); return;
+    case 'idle.save': await saveIdle(); return;
     case 'nav.go': navigate(data.route); return;
     case 'ui.toggleSidebar': S.ui.sidebarCollapsed = !S.ui.sidebarCollapsed; syncChrome(); persistUiSoon(); return;
     case 'ui.openSidebar': S.ui.sidebarOpen = true; $('#app').classList.add('sidebar-open'); return;
@@ -3960,7 +4046,7 @@ document.addEventListener('click', (event) => {
   if (!target || target.disabled) return;
   const act = target.dataset.act;
   if (!act) return;
-  if (act === 'dialog.submit' || act === 'dialog.cancel' || act === 'dialog.action') event.preventDefault();
+  if (act === 'project.open' || act === 'dialog.submit' || act === 'dialog.cancel' || act === 'dialog.action') event.preventDefault();
   Promise.resolve(handleAction(act, target)).catch((error) => {
     const err = toError(error);
     toast('error', t('err.title'), err.message);
@@ -3970,7 +4056,10 @@ document.addEventListener('change', (event) => {
   const el = event.target.closest('[data-change]');
   if (!el) return;
   const kind = el.dataset.change;
-  if (kind === 'settings.set') {
+  if (kind === 'idle.mode') {
+    S.idle.mode = el.value; S.idle.error = null;
+    renderPage({ force: true });
+  } else if (kind === 'settings.set') {
     const key = el.dataset.key;
     if (key === 'interval') S.settings.interval = Number(el.value) || 0;
     else if (key === 'lang') S.settings.lang = el.value;
@@ -3990,7 +4079,9 @@ document.addEventListener('input', (event) => {
   const el = event.target.closest('[data-bind]');
   if (!el) return;
   const bind = el.dataset.bind;
-  if (bind === 'filter') {
+  if (bind === 'idle.value') {
+    S.idle[el.dataset.key] = el.value;
+  } else if (bind === 'filter') {
     S.filters[el.dataset.key] = el.value;
     persistUiSoon();
     renderPage({ force: true });

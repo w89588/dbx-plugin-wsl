@@ -1,0 +1,31 @@
+name: 功能 BUG / Bug report
+description: 报告 WSL Manager 的功能异常 / Report a problem with this plugin
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: 请先搜索已有 Issues。请勿上传密码、令牌或包含隐私的完整配置。Search existing issues and redact secrets from logs.
+  - type: input
+    id: versions
+    attributes:
+      label: 环境版本 / Versions
+      description: 插件版本、DBX 版本、Windows 版本、wsl --version 输出；容器问题请附 wslc 版本。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 预期与实际结果 / Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 脱敏日志或截图 / Redacted logs or screenshots
+      description: 可从插件任务面板复制错误；保活问题请说明是否已关闭并重新启动 WSL。

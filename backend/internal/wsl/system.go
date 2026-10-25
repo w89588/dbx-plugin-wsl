@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	dbxpluginsdk "github.com/t8y2/dbx/plugins/sdk/go/dbx-plugin-sdk"
@@ -20,6 +21,9 @@ import (
 )
 
 const maxConfigBytes = 256 * 1024
+
+// Serialize configuration writes, including read/modify/write idle-policy updates.
+var configMu sync.Mutex
 
 // SystemInfo implements system/info. It never fails just because a tool is
 // missing; missing tools are reported through available=false and warnings.
@@ -203,6 +207,8 @@ type ConfigWriteParams struct {
 
 // ConfigWrite implements system/config/write with backup + atomic replace.
 func (s *Service) ConfigWrite(ctx context.Context, params ConfigWriteParams) (any, *apperr.Error) {
+	configMu.Lock()
+	defer configMu.Unlock()
 	target := strings.ToLower(strings.TrimSpace(params.Target))
 	var path string
 	switch target {
@@ -216,7 +222,11 @@ func (s *Service) ConfigWrite(ctx context.Context, params ConfigWriteParams) (an
 	if path == "" {
 		return nil, apperr.InvalidParams("无法解析配置文件路径", "请检查用户目录环境变量", "")
 	}
-	content := []byte(params.Content)
+	return writeConfigFile(path, params.Content)
+}
+
+func writeConfigFile(path, text string) (map[string]any, *apperr.Error) {
+	content := []byte(text)
 	if len(content) > maxConfigBytes {
 		return nil, apperr.InvalidParams("配置内容超过 256 KiB 上限", "请精简配置后重试", "")
 	}

@@ -1,35 +1,31 @@
-# WSL Manager v0.1.1
+# WSL Manager v0.1.2
 
-Permission declaration fix for the DBX Store review. Adds `host.binary` to the package manifest and candidate metadata to disclose the existing native process execution capability. Runtime behavior is unchanged; v0.1.0 remains available unchanged.
+## 新功能 / What's new
 
-## Highlights
+- **空闲退出与保活**：从发行版页或设置页选择“保持发行版运行”、恢复 WSL 默认策略或分别自定义发行版 / WSL 2 虚拟机空闲超时。保活采用原生 `[general] instanceIdleTimeout=-1`，关闭终端或 DBX 后设置仍保留，不新增后台保活进程。
+- **配置保护与生效提示**：自动备份已有 `.wslconfig`，保留无关配置，检测外部修改冲突，阻止覆盖编辑器内未保存的修改。保存不自动关闭 WSL；界面提示用户在合适时机确认关闭、再启动发行版。
+- **源码与反馈**：侧栏和“设置 → 关于”直接访问本项目 GitHub 仓库与 Issues，提供 BUG / 功能建议表单和反馈指引，中英文可用。
 
-- **WSL distributions (`wsl`)**: list with live state/disk usage, start/stop, default distro, version switching, default user, sparse/compact/resize, export/import, unregister, distro info (OS release, kernel, disk, IP, `/etc/wsl.conf`), open terminal/Explorer, run commands inside a distro.
-- **WSL containers (`wslc`)**: container list/lifecycle, run, logs (follow), exec, live stats, prune; image list/pull/build/tag/save/load/remove/prune; volumes and networks management; live event stream.
-- **Registry credentials**: sign in/out to container registries (`docker login` equivalent) so private images and Docker Hub rate limits are handled; pull/build/run failures are classified and the UI offers a one-click "go to sign in" action with the registry prefilled.
-- **Command console**: run arbitrary `wsl` / `wslc` commands as argv (no shell), with stdout/stderr/exit code.
-- **Settings**: visual editors for `.wslconfig` and wslc `settings.yaml` with automatic backups.
-- UI: overview dashboard, dark/light theme, Chinese/English localization, task panel with live logs and cancellation.
+Keep distributions running after terminals close, restore WSL defaults, or configure separate distro and VM idle timeouts. Changes are backed up, stale writes are rejected, and shutdown requires an explicit confirmation. New source and feedback links open this repository and its GitHub Issue forms in the default browser.
 
-## Requirements
+## 使用 / Usage
 
-- Windows 11 with WSL (`wsl --version` works; verified with WSL 3.0.3/3.0.4).
-- DBX desktop `>= 0.5.68` (verified on 0.6.49).
-- `wslc` is optional; without it the distribution pages still work.
+发行版 → 空闲退出与保活 → 选择策略 → 保存 → 在合适时机关闭 WSL → 重新启动所需发行版。
 
-## Permissions
+Distributions → Idle shutdown & keep-alive → choose a policy → save → shut down WSL when convenient → start the required distribution again.
 
-`host.workbench`, `host.events`, `host.storage`, `host.binary` — no network, filesystem, clipboard, data or AI permissions are requested. The native sidecar runs with the current user and invokes `wsl.exe` / `wslc.exe`, `wt.exe` (or `cmd.exe` as a terminal fallback), `explorer.exe`, and `taskkill` for process-tree cancellation.
+保活不是 Windows 防休眠，也不会登录自启。设置全局作用于当前 Windows 用户的发行版；虚拟机设置不适用于 WSL 1 或 wslc 容器。关闭操作会停止 WSL 工作负载；仅保存不会中断它们。建议使用当前 WSL 版本，参见[设置说明](https://github.com/w89588/dbx-plugin-wsl/blob/v0.1.2/docs/idle-policy.md)。
 
-## Install
+## 安装与反馈 / Install and feedback
 
-1. Download `com.dbx.wsl-0.1.1-windows-x64.dbxp` from this release.
-2. Open DBX → Plugin Center → install the local package (enable unsigned development packages if the store build is not signed yet).
-3. Open **WSL Manager** from the plugin shortcut / command palette.
+下载 `com.dbx.wsl-0.1.2-windows-x64.dbxp`，在 DBX 插件中心安装。GitHub 资产是未签名候选包，安装时需允许未签名开发包；官方商店更新由维护者审核并签名。
 
-## Notes and limitations
+[源码仓库 / Source](https://github.com/w89588/dbx-plugin-wsl) · [BUG 与建议 / Issues](https://github.com/w89588/dbx-plugin-wsl/issues)
 
-- Windows-only (`windows-x64`).
-- Registry credentials are stored by `wslc` on the local machine; the plugin never persists passwords and passes them to `wslc` over stdin.
-- `wslc` 3.0.3/3.0.4 has no command to list signed-in registries, so sign-in state is confirmed by pull results.
-- Export/import/build path fields require a Windows path (no native file picker yet).
+## 权限 / Permissions
+
+仍为 `host.workbench`、`host.events`、`host.storage`、`host.binary`。原生 Sidecar 读写当前用户的 WSL 配置，已有文件先备份。用户点击链接后通过 `explorer.exe` 打开固定的项目 / 微软文档 HTTPS 地址；不接受任意 URL，不自动上传日志或创建 Issue。其他 WSL、wslc 与 Windows 辅助进程行为保持原有权限范围。
+
+## 验证 / Validation
+
+Go unit tests and `go vet`; manifest preflight; isolated sidecar RPC checks; browser interaction tests covering policy save, validation, unsaved-editor protection, cancelled shutdown, feedback links, Chinese/English, light/dark and narrow layouts. Tests do not shut down the user's WSL or change the user's live configuration.
