@@ -22,6 +22,10 @@ type projectParams struct {
 // Explicit allowlist: MCP cannot invoke bridge methods or arbitrary host RPC.
 // Parameter schemas use the same Go types as dispatch.
 var mcpMethods = []mcpMethod{
+	{"backups/list", true, struct{}{}},
+	{"backups/create", false, wsl.BackupCreateParams{}},
+	{"backups/verify", false, wsl.BackupIDParams{}},
+	{"backups/restore", false, wsl.BackupRestoreParams{}},
 	{"system/info", true, struct{}{}},
 	{"system/project/open", false, projectParams{}},
 	{"system/wsl/status", true, struct{}{}},

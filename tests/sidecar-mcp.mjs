@@ -33,7 +33,7 @@ try {
  assert.equal(init.plugin.version,manifest.version);assert(init.capabilities.includes('mcp'));
  const listing=await result('mcp/tools');assert.equal(listing.tools.length,4);
  const mcp=manifest.contributions.find(c=>c.type==='mcp');assert.equal(mcp.external_tools,true);
- const described=await invoke('wsl_describe');assert.equal(described.payload.methods.length,73);
+ const described=await invoke('wsl_describe');assert.equal(described.payload.methods.length,(readFileSync(join(root,'backend/internal/handler/mcp_catalog.go'),'utf8').match(/\{"[^"]+", (?:true|false),/g)||[]).length);
  const names=new Set(described.payload.methods.map(m=>m.method));
  for(const method of ['wsl/distros/exec','wslc/containers/exec','wslc/registry/login','jobs/get'])assert(names.has(method));
  const policy=(await invoke('wsl_read',{method:'system/wsl/idle/read'})).payload;
@@ -57,7 +57,7 @@ try {
   console.log(`LIVE READ: ${connections.payload.distros.length} WSL distributions, ${containers.payload.containers.length} WSLC containers.`);
  }
  const jobs=await invoke('wsl_read',{method:'jobs/list'});assert.equal(jobs.envelope.isError,false);
- console.log(`PASS: packaged ${manifest.version} MCP discovery, 73 methods, isolated write/read, read-only enforcement, conflict, redaction and recursion rejection.`);
+ console.log(`PASS: packaged ${manifest.version} MCP discovery, ${described.payload.methods.length} methods, isolated write/read, read-only enforcement, conflict, redaction and recursion rejection.`);
 } finally {
  for(const p of pending.values())clearTimeout(p.timer);
  child.stdin.end();reader.close();child.kill();

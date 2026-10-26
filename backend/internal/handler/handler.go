@@ -14,6 +14,7 @@ import (
 	"github.com/w89588/dbx-plugin-wsl/internal/apperr"
 	"github.com/w89588/dbx-plugin-wsl/internal/execx"
 	"github.com/w89588/dbx-plugin-wsl/internal/jobs"
+	"github.com/w89588/dbx-plugin-wsl/internal/winenv"
 	"github.com/w89588/dbx-plugin-wsl/internal/wsl"
 	"github.com/w89588/dbx-plugin-wsl/internal/wslc"
 )
@@ -73,6 +74,32 @@ func (h *Handler) dispatch(
 	emitter *dbxpluginsdk.Emitter,
 ) (any, *apperr.Error) {
 	switch method {
+	case "system/folder/select":
+		path, err := winenv.SelectFolder()
+		if err != nil {
+			return nil, apperr.Internal("目录选择失败", err.Error())
+		}
+		return map[string]any{"path": path}, nil
+	case "backups/list":
+		return h.WSL.BackupList()
+	case "backups/create":
+		var p wsl.BackupCreateParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSL.BackupCreate(ctx, emitter, p)
+	case "backups/verify":
+		var p wsl.BackupIDParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSL.BackupVerify(emitter, p.ID)
+	case "backups/restore":
+		var p wsl.BackupRestoreParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSL.BackupRestore(ctx, emitter, p)
 	case "resources/subscribe":
 		return h.subscribeResources(params, emitter)
 	case "resources/unsubscribe":

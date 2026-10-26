@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -75,8 +77,12 @@ func (h *Handler) subscribeResources(raw json.RawMessage, emitter *sdk.Emitter) 
 	if len(h.streams) >= 8 {
 		return nil, apperr.Conflict("资源订阅过多", "请关闭不使用的工作台页面", "")
 	}
+	var nonce [16]byte
+	if _, err := rand.Read(nonce[:]); err != nil {
+		return nil, apperr.Internal("创建订阅标识失败", err.Error())
+	}
 	ctx, cancel := context.WithCancel(context.Background())
-	stream := &resourceStream{cancel: cancel, expires: now.Add(resourceLease), signature: signature, generation: strconv.FormatInt(now.UnixNano(), 36)}
+	stream := &resourceStream{cancel: cancel, expires: now.Add(resourceLease), signature: signature, generation: hex.EncodeToString(nonce[:])}
 	h.streams[request.ID] = stream
 	go h.runResourceStream(ctx, request, stream, emitter.Event)
 	return map[string]any{"subscriptionId": request.ID, "leaseSeconds": 65, "generation": stream.generation}, nil

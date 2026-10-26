@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.1.5`
+- 版本：`0.2.0`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.5"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.2.0"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -750,7 +750,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `mcp/call`：参数 `{tool, arguments, lifecycle?}`，兼容 DBX 插件桥。工作台仅操作当前 Windows 用户的本机资源，忽略连接 lifecycle，不接受远程目标。
 - `wsl_connections`：无参数，复用 `wsl/distros/list`；不会把 WSLC 容器误认为 WSL 发行版。
 - `wsl_describe`：可选 `method`，列举或获取方法类型 Schema；语义必填与取值范围由原有服务校验。
-- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 73 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
+- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 77 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
 - 查询工具只允许明确声明的查询方法；exec、配置、删除、后台事件、取消均需写工具。日志 `follow:true` 也需写工具。
 - 返回标准 `{content:[{type:"text",text:"JSON"}],isError,resultType:"complete"}`，业务失败保留 code/message/hint/detail；非零命令退出码标记 `isError:true`。
 - 长任务返回 jobId 后，通过同一 sidecar 的 `jobs/get` 查询最终状态和输出；返回 jobId 不代表执行成功。Sidecar 重启后原任务不可查询。
@@ -759,7 +759,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 接入、宿主兼容限制与示例见 [MCP 指南](mcp.md)。
 
 
-## 11. v0.1.5 资源流与可靠性
+## 11. v0.2.0 资源流与可靠性
 
 传输沿用 `stdio-jsonl → dbxPlugin.onEvent`，不是 HTTP SSE，不新增端口、权限或 MCP 工具。
 
@@ -771,3 +771,12 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `job/output` 输出行及 `jobs/get.lines` 增加 sequence；`job/end` 增加 sequence 和 status（completed/failed/cancelled），ok 仅在 completed 时为 true。事件可能先于创建任务响应到达；客户端按 jobId 建立状态，以 `jobs/get` 快照补偿。
 - `jobs/list` 增加可选 `includeCompleted`（默认 false）。已结束任务保留至多 32 个、最长 24 小时，运行中任务不淘汰。记录仅存在当前 Sidecar 内，不保证宿主退出后的任务续跑或跨进程历史。
 - `system/config/read` 的每个配置对象增加 revision（包含原始文件内容和存在状态的 SHA-256）；`system/config/write` 必须携带 expectedRevision。缺失返回 INVALID_PARAMS；不匹配返回 CONFLICT，并保留原文件。写入仍备份并原子替换。检查覆盖插件并发及检查前的外部修改，不声称可锁定任意外部编辑器在检查与写入之间的写入。
+
+
+## 12. 备份与恢复（0.2.0）
+
+- `backups/list`：返回 backups 和 defaultDirectory；记录位于当前用户 LocalAppData/dbx-wsl-manager/backups。
+- `backups/create`：`{name,directory?,stopBeforeBackup?}`，返回 jobId。tar 导出、SHA-256 校验成功后记录 completed；取消和失败保留部分文件。不会自动删除历史备份或恢复运行状态。
+- `backups/verify`：`{id}`，长任务重新校验大小与 SHA-256。
+- `backups/restore`：`{id,name,location}`，长任务校验后导入 WSL 2 并验证启动。名称不可与源相同或已存在，目录须不存在。失败保留目标供检查，不自动卸载。
+- `system/folder/select`：无参数，调用 Windows 文件夹选择器，返回 `{path}`，取消时 path 为空。仅 UI 使用，不暴露给 MCP；Sidecar 会调用固定 PowerShell/Windows Forms 脚本。
