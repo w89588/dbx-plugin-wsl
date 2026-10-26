@@ -17,5 +17,5 @@
   "source": "https://github.com/w89588/dbx-plugin-wsl",
   "homepage": "https://github.com/w89588/dbx-plugin-wsl",
   "license": "Apache-2.0",
-  "releaseNotes": "v0.4.1：移除未经充分验证的 DBX 0.6.55 安装限制；保留 Host API 1，补充官方历史解析器和 0.6.27 前端 SDK 兼容性回归。"
+  "releaseNotes": "v0.1.6：统一整合备份恢复、诊断、资源配置及兼容性修复；撤下页面应用模板功能。"
 }

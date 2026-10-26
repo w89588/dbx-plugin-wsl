@@ -3,7 +3,7 @@
   "manifest_version": 1,
   "id": "com.dbx.wsl",
   "name": "WSL Manager",
-  "version": "0.4.1",
+  "version": "0.1.6",
   "publisher": "w89588",
   "description": "Visual manager for WSL distributions (wsl) and WSL containers (wslc) on Windows.",
   "icon": "assets/plugin.svg",

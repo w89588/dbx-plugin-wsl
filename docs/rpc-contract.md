@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.4.1`
+- 版本：`0.1.6`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.4.1"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.6"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -773,7 +773,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `system/config/read` 的每个配置对象增加 revision（包含原始文件内容和存在状态的 SHA-256）；`system/config/write` 必须携带 expectedRevision。缺失返回 INVALID_PARAMS；不匹配返回 CONFLICT，并保留原文件。写入仍备份并原子替换。检查覆盖插件并发及检查前的外部修改，不声称可锁定任意外部编辑器在检查与写入之间的写入。
 
 
-## 12. 备份与恢复（0.2.0）
+## 12. 备份与恢复（0.1.6）
 
 - `backups/list`：返回 backups 和 defaultDirectory；记录位于当前用户 LocalAppData/dbx-wsl-manager/backups。
 - `backups/create`：`{name,directory?,stopBeforeBackup?}`，返回 jobId。tar 导出、SHA-256 校验成功后记录 completed；取消和失败保留部分文件。不会自动删除历史备份或恢复运行状态。
@@ -782,7 +782,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `system/folder/select`：无参数，调用 Windows 文件夹选择器，返回 `{path}`，取消时 path 为空。仅 UI 使用，不暴露给 MCP；Sidecar 会调用固定 PowerShell/Windows Forms 脚本。
 
 
-## 13. 诊断与配置助手（0.3.0）
+## 13. 诊断与配置助手（0.1.6）
 
 - `diagnostics/run`：`{registry?:主机名或主机:端口,ports?:整数数组}`。最多 16 个回环端口；可选 HTTPS GET /v2/ 不发送凭据、不跟随重定向。返回脱敏 checks（id/status/evidence/action/checkedAt）、scope、redacted。端口检查短暂绑定后释放，不预留端口，不报告进程归属。
 - `system/resources/read`：返回当前内容、revision、values 和 maxProcessors。
@@ -790,7 +790,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `system/resources/apply`：参数同预览，重新校验修订号后保存并备份；返回 appliedToRunningInstances:false，不自动关闭 WSL。
 
 
-## 14. 开发环境模板（v0.4.0）
+## 14. 开发环境模板（v0.1.6，后台接口）
 
 | 方法 | 参数 | 结果 |
 | --- | --- | --- |
@@ -808,3 +808,5 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 `wsl_describe` 在原字段类型上增加 `description/preconditions/sideEffects/retrySafety/completion`，关键流程补充 required、enum、minimum/maximum、单位；其他方法继续由服务进行最终语义验证。`wsl_read` 不能调用模板创建；新建任务以 `jobs/get.status=completed` 为成功。发现操作本身不执行外部命令。
 
 手动真实验收：构建 `tests/tmp/workflow.exe` 后，显式设置 `WSL_TEMPLATE_LIVE=1` 执行 `node tests/live-templates.mjs`。脚本只清理自己创建且归属标签匹配的临时容器和卷，不卸载用户发行版。
+
+0.1.6 已移除模板页面及创建弹窗；本节模板 RPC/MCP 保留，已有资源不自动删除。
