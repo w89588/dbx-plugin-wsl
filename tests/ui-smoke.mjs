@@ -44,6 +44,10 @@ window.dbxPlugin = {
     if(method==='system/resources/read') return {revision:'resources-r1',content:'[wsl2]\\nmemory=4GB',values:{memory:'4GB',processors:'2',swap:'0MB'},maxProcessors:8};
     if(method==='system/resources/preview') return {before:'[wsl2]\\nmemory=4GB',after:'[wsl2]\\nmemory=8192MB',changed:true,revision:'resources-r1'};
     if(method==='diagnostics/run') return {scope:'redacted test report',checks:[{id:'wsl',status:'ok',evidence:'Tool available',action:'',checkedAt:Date.now()}],redacted:true};
+    if(method==='templates/catalog') return {presets:[{kind:'postgres',image:'postgres:17-alpine',defaultPort:5432},{kind:'redis',image:'redis:7-alpine',defaultPort:6379}],environments:[{name:'dev-redis',kind:'redis',port:6379}]};
+    if(method==='templates/plan') return {...params,image:'redis:7-alpine',container:'dbx-'+params.name,volume:'dbx-'+params.name+'-data'};
+    if(method==='templates/create') {window.__jobSnapshot={jobId:'template-job',method,status:'completed',sequence:1,result:{ready:true},lines:[]};return {jobId:'template-job'};}
+    if(method==='templates/status') return {name:params.name,ready:true,status:'running',host:'127.0.0.1',port:6379,username:'default',database:'0',container:'dbx-'+params.name,volume:'dbx-'+params.name+'-data'};
     if(method==='jobs/list') return {jobs:[]};
     if(method==='jobs/get') return window.__jobSnapshot || {};
     if(method==='test/fastJob') {window.__hostEvent({method:'job/end',params:{jobId:'fast-job',status:'cancelled',ok:false,sequence:1,exitCode:0}});return {jobId:'fast-job'};}
@@ -214,6 +218,26 @@ try {
   await wait(`document.querySelector('#page').innerText.includes('Tool available')`);
   await delay(250);writeFileSync(join(shots,'diagnostics.png'),Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
   console.log('PASS: resource configuration reads current values, previews changes and enables save only after preview; diagnostic report renders evidence.');
+  await click('#nav [data-route="templates"]');
+  await wait(`document.querySelector('[data-act="templates.choose"][data-kind="redis"]')`);
+  await click('[data-act="templates.choose"][data-kind="redis"]');
+  await wait(`document.querySelector('#dialog-root [name="name"]')`);
+  await click('[data-act="dialog.submit"]');
+  await wait(`document.querySelector('#dialog-root [name="password"]')`);
+  assert(await evaluate(`document.querySelector('#dialog-root').innerText.includes('127.0.0.1:6379')`));
+  await evaluate(`document.querySelector('#dialog-root [name="password"]').value='test-password-not-persisted'`);
+  await click('[data-act="dialog.submit"]');
+  await wait(`S.jobs.get('template-job')?.status==='completed'`);
+  assert(await evaluate(`!JSON.stringify(S.jobs.get('template-job').params).includes('test-password')`),'password retained in UI task');
+  await click('[data-act="templates.status"]');
+  await wait(`document.querySelector('#page').innerText.includes('就绪')`);
+  for (const [name,width] of [['templates',1280],['templates-narrow',620]]) {
+    await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:false});
+    await delay(200);
+    assert(await evaluate(`document.querySelector('#page').scrollWidth<=document.querySelector('#page').clientWidth+1`),'template page overflow');
+    writeFileSync(join(shots,name+'.png'),Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+  }
+  console.log('PASS: template navigation, preview/confirmation, create, status and password exclusion from UI job state.');
   assert.equal(errors.length,0,JSON.stringify(errors));
   console.log('PASS: keep-alive save, restart disclosure, cancel shutdown, input validation, draft protection, source/Issue link dispatch, navigation, Chinese/English, light/dark/narrow layout.');
   await call('Browser.close').catch(()=>{});

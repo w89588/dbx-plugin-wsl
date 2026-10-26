@@ -1,6 +1,6 @@
 # AI / MCP 接入
 
-WSL 管理器 0.3.0 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **81 个管理 RPC 接口**（两个资源订阅接口仅供 UI 使用）。不启动额外端口，不另存连接或凭据，不需要插件 API Key。
+WSL 管理器 0.4.0 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **85 个管理 RPC 接口**（两个资源订阅接口仅供 UI 使用）。不启动额外端口，不另存连接或凭据，不需要插件 API Key。
 
 ## 安装与启用
 
@@ -24,7 +24,7 @@ WSL 管理器 0.3.0 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **81
 
 外部 MCP 工具名增加 `dbx_wsl__` 前缀。`mcp/tools` 与 `mcp/call` 是 DBX 与插件之间的协议方法，不是另一个独立 MCP 服务地址。
 
-使用四个稳定工具而非逐个暴露 81 个方法，避免 DBX 每插件最多 64 个工具导致后面的管理能力被截断。`paramsJson` 使用 JSON 对象字符串，兼容宿主和不同模型对嵌套 Schema 的简化；具体字段由现有 Go 参数类型生成，通过 `wsl_describe` 查询，语义必填和取值范围仍由原服务校验。省略 `paramsJson` 等价于 `{}`。
+使用四个稳定工具而非逐个暴露 85 个方法，避免 DBX 每插件最多 64 个工具导致后面的管理能力被截断。`paramsJson` 使用 JSON 对象字符串，兼容宿主和不同模型对嵌套 Schema 的简化；具体字段由现有 Go 参数类型生成，通过 `wsl_describe` 查询，语义必填和取值范围仍由原服务校验。省略 `paramsJson` 等价于 `{}`。
 
 ## 调用示例
 
@@ -108,3 +108,10 @@ node tests/sidecar-idle.mjs
 可选真实只读查询：设置环境变量 `WSL_MCP_LIVE=1` 后运行 `node tests/sidecar-mcp.mjs`，额外查询当前用户的 WSL 发行版与容器列表。配置写入部分仍使用隔离配置目录。
 
 包内程序验证不等于所有真实删除/安装/更新操作均已在个人机器执行。当前不通过自动化测试卸载发行版、删除已有容器或修改个人 WSL 配置。
+
+
+## 0.4.0 工作流语义
+
+先用 `wsl_describe` 查询方法的约束、操作影响、完成条件和重试建议。模板流程为 `templates/catalog` → `templates/plan` → 用户确认 → `templates/create` → `jobs/get` → `templates/status`。创建参数包含敏感密码，宿主和客户端可能保留工具输入；不要在聊天中复述密码。复用健康同配置环境会直接返回 `reused:true`，不产生 jobId，不旋转密码。失败后先检查已有资源，不能自动重放；重建使用新名称。
+
+资源配置先 `system/resources/read` 获取 revision，再 `preview`、确认并 `apply`。遇到冲突应重新读取并重新确认差异，不能只替换 revision 后覆盖。模板和诊断不会自动创建 DBX 连接或自动修复系统。删除、exec 与 console 标为 `never-automatic`，必须保持明确操作授权边界。

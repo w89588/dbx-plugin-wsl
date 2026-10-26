@@ -62,6 +62,7 @@ func NewManager() *Manager {
 type Job struct {
 	manager   *Manager
 	id        string
+	ordinal   int
 	method    string
 	emitter   *dbxpluginsdk.Emitter
 	startedAt time.Time
@@ -87,6 +88,7 @@ func (m *Manager) Start(method string, emitter *dbxpluginsdk.Emitter, task Task)
 	job := &Job{
 		manager:   m,
 		id:        fmt.Sprintf("job-%d", m.seq),
+		ordinal:   m.seq,
 		method:    method,
 		emitter:   emitter,
 		startedAt: m.now(),
@@ -338,8 +340,9 @@ func (m *Manager) Now() time.Time { return m.now() }
 // Caller holds manager mutex. Running jobs are never evicted.
 func (m *Manager) pruneLocked() {
 	type entry struct {
-		id string
-		at time.Time
+		id      string
+		at      time.Time
+		ordinal int
 	}
 	completed := []entry{}
 	for id, job := range m.jobs {
@@ -353,9 +356,14 @@ func (m *Manager) pruneLocked() {
 			delete(m.jobs, id)
 			continue
 		}
-		completed = append(completed, entry{id, at})
+		completed = append(completed, entry{id, at, job.ordinal})
 	}
-	sort.Slice(completed, func(i, j int) bool { return completed[i].at.Before(completed[j].at) })
+	sort.Slice(completed, func(i, j int) bool {
+		if completed[i].at.Equal(completed[j].at) {
+			return completed[i].ordinal < completed[j].ordinal
+		}
+		return completed[i].at.Before(completed[j].at)
+	})
 	for len(completed) > MaxCompleted {
 		delete(m.jobs, completed[0].id)
 		completed = completed[1:]

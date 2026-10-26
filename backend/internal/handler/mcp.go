@@ -120,13 +120,13 @@ func (h *Handler) mcpCall(raw json.RawMessage, emitter *dbxpluginsdk.Emitter) (a
 			if describe.Method != "" && describe.Method != m.Method {
 				continue
 			}
-			methods = append(methods, map[string]any{"method": m.Method, "readOnly": m.ReadOnly, "inputSchema": mcpSchema(reflect.TypeOf(m.Params))})
+			methods = append(methods, describeMethod(m))
 		}
 		if len(methods) == 0 {
 			return invalid("未知方法")
 		}
 		return mcpResult(map[string]any{"methods": methods, "notes": []string{
-			"字段类型由服务参数生成；必填与取值约束由原有服务校验。省略字段使用原有默认值。",
+			"字段类型由服务参数生成；模板、备份和配置等关键流程附带约束与副作用说明。未列出的语义仍由服务验证，不代表字段可任意省略。",
 			"发行版名称、容器 ID 与路径属于运行 DBX 的当前 Windows 用户，不是远程连接。",
 			"长任务返回 jobId；通过 wsl_read jobs/get 读取 status、error、result 和输出，completed 才是成功。任务仅在当前 sidecar 生命周期内有效。",
 			"wslc/containers/logs 的 follow=true 必须使用 wsl_write；日志跟随和事件订阅结束后调用 jobs/cancel。",

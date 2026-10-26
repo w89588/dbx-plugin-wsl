@@ -129,6 +129,8 @@ func TestJobListOnlyRunningAndLineCap(t *testing.T) {
 
 func TestHistoryBoundAndSequences(t *testing.T) {
 	manager := NewManager()
+	fixedNow := time.Now()
+	manager.now = func() time.Time { return fixedNow }
 	running := manager.Start("running", nil, func(ctx context.Context, _ *Job) (any, *apperr.Error) { <-ctx.Done(); return nil, nil })
 	defer manager.Cancel(running.ID())
 	var first *Job

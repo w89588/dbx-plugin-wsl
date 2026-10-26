@@ -198,6 +198,15 @@ submission checklist.
 
 [Apache-2.0](LICENSE). The vendored DBX Go plugin SDK (`backend/sdk/dbx-plugin-sdk`) is Apache-2.0 licensed.
 
-## v0.3.0
+## Live updates and task/configuration consistency
 
 Resource changes stream over the existing host event bridge (not HTTP SSE). The UI patches existing rows and fields, preserving focus, scroll and drafts. Hidden views unsubscribe; visible views reconnect with a fresh snapshot. Sampling remains in the backend; unchanged data is not pushed. Configuration writes require the revision returned by `system/config/read`. Completed job history is limited to 32 jobs and 24 hours in the current sidecar; restarting the sidecar clears history.
+
+
+## Backup, diagnostics and development workflows
+
+v0.2.0 adds persistent SHA-256 backup records, a Windows directory picker and restore to a new distribution/name/directory. v0.3.0 adds redacted tool/disk/port/registry diagnostics and revision-protected memory/CPU/swap previews and saves. Saving never shuts down WSL automatically.
+
+v0.4.0 adds local PostgreSQL 17 Alpine and Redis 7 Alpine templates with password authentication, localhost ports, named volumes and health checks. Preview before creation; inspect status to copy connection details without passwords. Matching healthy environments are reused without rotating passwords. Conflicting or incomplete creations are never replayed; failures preserve resources, and rebuilds require a new name. Manage lifecycle through the existing container/volume pages. No automatic DBX connection or Compose orchestration is included.
+
+Credentials use a temporary environment file; normal completion/cancellation removes it, but forced termination may leave `.env-*` files in the user's environment record directory. Records and task output omit passwords, while container inspection and host tool inputs may expose them. Image tags pin the major version, not a digest. MCP descriptions add semantic constraints and safe retry/completion guidance for key workflows.

@@ -74,6 +74,26 @@ func (h *Handler) dispatch(
 	emitter *dbxpluginsdk.Emitter,
 ) (any, *apperr.Error) {
 	switch method {
+	case "templates/catalog":
+		return h.WSLC.TemplateCatalog()
+	case "templates/plan":
+		var p wslc.TemplatePlanParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSLC.TemplatePlan(p)
+	case "templates/status":
+		var p wslc.TemplateStatusParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSLC.TemplateStatus(ctx, p.Name)
+	case "templates/create":
+		var p wslc.TemplateCreateParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSLC.TemplateCreate(ctx, emitter, p)
 	case "diagnostics/run":
 		var p diagnosticParams
 		if e := decodeParams(params, &p); e != nil {

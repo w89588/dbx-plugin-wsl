@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.3.0`
+- 版本：`0.4.0`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.3.0"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.4.0"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -750,7 +750,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `mcp/call`：参数 `{tool, arguments, lifecycle?}`，兼容 DBX 插件桥。工作台仅操作当前 Windows 用户的本机资源，忽略连接 lifecycle，不接受远程目标。
 - `wsl_connections`：无参数，复用 `wsl/distros/list`；不会把 WSLC 容器误认为 WSL 发行版。
 - `wsl_describe`：可选 `method`，列举或获取方法类型 Schema；语义必填与取值范围由原有服务校验。
-- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 81 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
+- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 85 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
 - 查询工具只允许明确声明的查询方法；exec、配置、删除、后台事件、取消均需写工具。日志 `follow:true` 也需写工具。
 - 返回标准 `{content:[{type:"text",text:"JSON"}],isError,resultType:"complete"}`，业务失败保留 code/message/hint/detail；非零命令退出码标记 `isError:true`。
 - 长任务返回 jobId 后，通过同一 sidecar 的 `jobs/get` 查询最终状态和输出；返回 jobId 不代表执行成功。Sidecar 重启后原任务不可查询。
@@ -788,3 +788,23 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `system/resources/read`：返回当前内容、revision、values 和 maxProcessors。
 - `system/resources/preview`：`{expectedRevision,memoryMB?,processors?,swapMB?}`。空缺字段移除对应覆盖项；内存 256–1048576 MiB，swap 0–1048576 MiB，CPU 1–本机逻辑核数。返回 before/after/changed/restartRequired；不写文件。
 - `system/resources/apply`：参数同预览，重新校验修订号后保存并备份；返回 appliedToRunningInstances:false，不自动关闭 WSL。
+
+
+## 14. 开发环境模板（v0.4.0）
+
+| 方法 | 参数 | 结果 |
+| --- | --- | --- |
+| `templates/catalog` | `{}` | `presets` 与本机 `environments` 记录，记录不代表运行状态 |
+| `templates/plan` | `kind,name,port` | 固定镜像、挂载点、容器/卷名称、本机地址及影响；不写入 |
+| `templates/create` | `kind,name,port,password` | 新建返回 `jobId`；健康同配置复用直接返回 `reused:true,ready:true` |
+| `templates/status` | `name` | 校验归属后的运行/健康状态与不含密码的连接信息 |
+
+`kind` 只接受 `postgres`、`redis`；名称为 `^[a-z][a-z0-9-]{2,30}$`；端口 1–65535。密码为 12–128 UTF-8 字节，无 CR/LF/NUL。PostgreSQL 用户/数据库固定 `app`，Redis 用户 `default`、数据库 `0`。容器名 `dbx-<name>`，卷名 `dbx-<name>-data`，只绑定 `127.0.0.1`。
+
+流程：只读冲突/端口预检 → 排他保存不含密码的永久记录 → 拉取镜像 → 再查冲突 → 创建带随机归属标签的卷 → 创建容器 → 最多 90 秒健康等待。端口预检不是预约。每一步均有超时；失败/取消保留已创建资源，不回滚删除，不自动重新初始化。已有记录只允许查询或复用健康同配置资源；不健康、缺失或异配置须人工检查，重建使用新名。重试不会旋转密码。
+
+密码通过临时环境文件传递，不写入 Windows 命令参数、模板记录和任务输出；容器环境以及宿主参数可能包含密码。正常失败、取消和完成清理临时文件；进程强制结束可能遗留 `%LOCALAPPDATA%/dbx-wsl-manager/environments/.env-*`。不要在该目录保存其他机密。模板使用主版本镜像标签，不保证摘要固定，不自动升级既有容器。
+
+`wsl_describe` 在原字段类型上增加 `description/preconditions/sideEffects/retrySafety/completion`，关键流程补充 required、enum、minimum/maximum、单位；其他方法继续由服务进行最终语义验证。`wsl_read` 不能调用模板创建；新建任务以 `jobs/get.status=completed` 为成功。发现操作本身不执行外部命令。
+
+手动真实验收：构建 `tests/tmp/workflow.exe` 后，显式设置 `WSL_TEMPLATE_LIVE=1` 执行 `node tests/live-templates.mjs`。脚本只清理自己创建且归属标签匹配的临时容器和卷，不卸载用户发行版。
