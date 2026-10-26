@@ -17,5 +17,5 @@
   "source": "https://github.com/w89588/dbx-plugin-wsl",
   "homepage": "https://github.com/w89588/dbx-plugin-wsl",
   "license": "Apache-2.0",
-  "releaseNotes": "v0.1.6：统一整合备份恢复、诊断、资源配置及兼容性修复；撤下页面应用模板功能。"
+  "releaseNotes": "v0.1.6：新增备份恢复中心、诊断中心和资源配置助手；MCP 接口由 73 个扩展至 85 个，完善工作流描述；修复任务淘汰顺序、资源订阅标识冲突及配置 BOM 保留问题，移除 DBX 0.6.55 版本硬限制。"
 }
