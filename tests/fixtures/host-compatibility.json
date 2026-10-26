@@ -1,0 +1,18 @@
+[
+  {
+    "version": "0.6.26",
+    "commit": "53ef9064074a343f8672cf73fc6caf21d56f91be",
+    "sha256": "2cf59b5aff84039d8d75e7f08465ad3ac23f67c8b0ebe111a78bd6f1f9bcfaa7"
+  },
+  {
+    "version": "0.6.27",
+    "commit": "52f2e8904d8bf4f5d05afe144a1355949af1450a",
+    "sha256": "a941748c95042dbb5ba74365eb062ab80f2f9a2ed6ba3149aa5d06734cfac2f4",
+    "bridgeSha256": "7483179a0ef6ce14d4bc7d4e74a4da00fba207be67d350ac3479a0a495b54ef8"
+  },
+  {
+    "version": "0.6.55",
+    "commit": "aa79f4028f39166e176c7b5dc27ed18853ca3a8f",
+    "sha256": "ce4a275c6f0b90a0abadfe120d05a86986c91d55ccc286e4f52c23bb2ae5ef30"
+  }
+]

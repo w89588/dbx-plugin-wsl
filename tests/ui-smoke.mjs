@@ -57,7 +57,34 @@ window.dbxPlugin = {
 };`;
 const source = readFileSync(join(root, 'ui/index.html'), 'utf8');
 const instrumented = source.replace('setTimeout(startApp, 0);', 'Object.assign(window, {S,navigate,resourceFeed,stopResourceStream,setupResourceStream,showDialog,closeDialog,startJob});setTimeout(startApp, 0);');
-const html = instrumented.replace('<script>', '<script>' + mock + '</script><script>');
+let bridgeScript='';
+if(process.env.DBX_HOST_BRIDGE_SOURCE){
+  const hostSource=readFileSync(process.env.DBX_HOST_BRIDGE_SOURCE,'utf8');
+  const start=hostSource.indexOf('export function pluginSdkSource(');
+  const end=hostSource.indexOf('\nfunction validRequestMessage',start);
+  assert(start>=0&&end>start,'upstream SDK function not found');
+  const functionSource=hostSource.slice(start,end).replace('export function pluginSdkSource(initialTheme?: PluginBridgeTheme): string','function pluginSdkSource(initialTheme)');
+  const sdk=new Function('PLUGIN_MESSAGE_SOURCE','HOST_MESSAGE_SOURCE','BRIDGE_VERSION',functionSource+';return pluginSdkSource();')('dbx-plugin','dbx-host',1);
+  bridgeScript=`
+  const simulatedHost=window.dbxPlugin;
+  const hostMessage=message=>window.dispatchEvent(new MessageEvent('message',{source:window,data:{source:'dbx-host',version:1,...message}}));
+  window.__hostEvent=message=>hostMessage({type:'event',...message});
+  window.addEventListener('message',async event=>{
+    const m=event.data;if(m?.source!=='dbx-plugin')return;
+    if(m.type==='ready'){hostMessage({type:'init',context:{},locale:'zh-CN',theme:{appearance:'light'},capabilities:{storage:true,events:true}});return;}
+    if(m.type!=='request')return;
+    try{let result;
+      if(m.method==='backend.invoke')result=await simulatedHost.invoke(m.params.method,m.params.params);
+      else if(m.method==='host.storageGet')result=await simulatedHost.storage.get(m.params.key);
+      else if(m.method==='host.storageSet')result=await simulatedHost.storage.set(m.params.key,m.params.value);
+      else throw Error('Unexpected host request '+m.method);
+      hostMessage({type:'response',id:m.id,result});
+    }catch(e){hostMessage({type:'response',id:m.id,error:e.message});}
+  });
+  `+sdk;
+  console.log('Using actual historical DBX SDK: '+process.env.DBX_HOST_BRIDGE_SOURCE);
+}
+const html = instrumented.replace('<script>', '<script>' + mock + bridgeScript + '</script><script>');
 const server = createServer((req,res)=>{ res.setHeader('Content-Type','text/html; charset=utf-8'); res.end(html); });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const child = spawn(chrome, ['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'], {windowsHide:true,stdio:'ignore'});

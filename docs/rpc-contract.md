@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.4.0`
+- 版本：`0.4.1`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.4.0"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.4.1"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---

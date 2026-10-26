@@ -47,7 +47,7 @@ WSL 工具与 Windows 辅助程序，详见下方权限披露。
 
 提供 `wsl_connections`、`wsl_describe`、`wsl_read`、`wsl_write` 四个工具，覆盖插件 85 个管理接口（资源订阅为 UI 专用）。AI 可以查询本机 WSL 连接（发行版）及 WSLC 容器，执行生命周期管理、命令与文件读写，管理镜像、卷、网络、配置、注册表和后台任务。
 
-通过 DBX 的外部 MCP 服务接入，工具名为 `dbx_wsl__wsl_connections` 等；需要支持插件 MCP 的 DBX **0.6.55+**。只读与写工具分别声明，写操作遵守宿主/客户端授权。当前 DBX 内置 AI 仅发现已打开的连接型插件，本插件为工作台型插件，因此本版本通过**外部 DBX MCP**使用这些能力。详见[接入与调用示例](docs/mcp.md)。
+通过 DBX 的外部 MCP 服务接入，工具名为 `dbx_wsl__wsl_connections` 等；不再设置 DBX 产品版本硬门槛；当前声明的宿主解析边界为 **0.6.27**，详见[兼容性验证](docs/compatibility.md)。只读与写工具分别声明，写操作遵守宿主/客户端授权。当前 DBX 内置 AI 仅发现已打开的连接型插件，本插件为工作台型插件，因此本版本通过**外部 DBX MCP**使用这些能力。详见[接入与调用示例](docs/mcp.md)。
 
 ## 备份与恢复（0.2.0）
 
@@ -94,7 +94,7 @@ WSL 工具与 Windows 辅助程序，详见下方权限披露。
 | 项 | 要求 |
 | --- | --- |
 | 操作系统 | Windows 11 + WSL 2（已验证 WSL 3.0.3 / 3.0.4） |
-| DBX | `>= 0.6.55` |
+| DBX | 无 `engines.dbx` 限制；当前完整声明从 0.6.27 可解析，参见[验证边界](docs/compatibility.md) |
 | WSL 容器 | `wslc` 可选；本插件已验证 WSL 3.0.3 / 3.0.4，缺失时发行版功能仍可用 |
 | 构建工具 | Go 1.22+、Node.js 22+、`@dbx-app/plugin-cli` |
 

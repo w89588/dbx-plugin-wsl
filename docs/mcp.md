@@ -1,10 +1,10 @@
 # AI / MCP 接入
 
-WSL 管理器 0.4.0 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **85 个管理 RPC 接口**（两个资源订阅接口仅供 UI 使用）。不启动额外端口，不另存连接或凭据，不需要插件 API Key。
+WSL 管理器 0.4.1 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **85 个管理 RPC 接口**（两个资源订阅接口仅供 UI 使用）。不启动额外端口，不另存连接或凭据，不需要插件 API Key。
 
 ## 安装与启用
 
-1. 使用 **DBX 0.6.55 或更新版本**，安装本版本 `.dbxp`。GitHub Release 为未签名候选包，本地安装需允许未签名开发包；官方商店版本由维护者审核签名。
+1. 安装本版本 `.dbxp`，不再用 `engines.dbx` 人为限定产品版本。当前 MCP 声明从 **DBX 0.6.27** 开始可解析，0.6.26 及更早的解析器不识别该类型，详见[兼容性证据](compatibility.md)。GitHub Release 为未签名候选包，本地安装需允许未签名开发包；官方商店版本由维护者审核签名。
 2. 使用 DBX 自带的 MCP 配置/安装入口，将 **DBX MCP 服务**连接到 AI 客户端。沿用 DBX 生成的配置和当前 Windows 用户的数据目录。
 3. 重连 MCP 客户端并刷新工具列表。插件 Manifest 已声明 `external_tools:true`，兼容的宿主会发现 `dbx_wsl__wsl_connections`、`dbx_wsl__wsl_describe`、`dbx_wsl__wsl_read`、`dbx_wsl__wsl_write`。
 4. 查询能力使用只读工具；需要修改时，在 DBX MCP 策略及客户端中允许对应写工具。宿主只读策略优先，插件不能放宽宿主策略。
@@ -110,7 +110,7 @@ node tests/sidecar-idle.mjs
 包内程序验证不等于所有真实删除/安装/更新操作均已在个人机器执行。当前不通过自动化测试卸载发行版、删除已有容器或修改个人 WSL 配置。
 
 
-## 0.4.0 工作流语义
+## 0.4.1 工作流语义
 
 先用 `wsl_describe` 查询方法的约束、操作影响、完成条件和重试建议。模板流程为 `templates/catalog` → `templates/plan` → 用户确认 → `templates/create` → `jobs/get` → `templates/status`。创建参数包含敏感密码，宿主和客户端可能保留工具输入；不要在聊天中复述密码。复用健康同配置环境会直接返回 `reused:true`，不产生 jobId，不旋转密码。失败后先检查已有资源，不能自动重放；重建使用新名称。
 

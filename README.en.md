@@ -44,7 +44,7 @@ current user's privileges and invokes local WSL tools and Windows helpers as dis
 
 ## AI and MCP
 
-Four tools (`wsl_connections`, `wsl_describe`, `wsl_read`, `wsl_write`) expose all 73 existing management methods through the external DBX MCP service, including local distributions, containers, command/file access, images, volumes, networks, configuration, registries and jobs. Requires DBX 0.6.55+. Writes retain host/client authorization. The current built-in DBX agent discovers open connection-provider plugins only; this workbench plugin uses the external MCP surface. See the [MCP guide](docs/mcp.md).
+Four tools (`wsl_connections`, `wsl_describe`, `wsl_read`, `wsl_write`) expose all 85 management methods through the external DBX MCP service, including local distributions, containers, command/file access, images, volumes, networks, configuration, registries and jobs. No DBX product-version gate is imposed. The current manifest is supported by the 0.6.27 host parser; see [compatibility evidence and limits](docs/compatibility.md). Writes retain host/client authorization. The current built-in DBX agent discovers open connection-provider plugins only; this workbench plugin uses the external MCP surface. See the [MCP guide](docs/mcp.md).
 
 ## Screenshots
 
@@ -71,7 +71,7 @@ Dark theme: [overview-dark.png](docs/screenshots/overview-dark.webp).
 | Item | Requirement |
 | --- | --- |
 | OS | Windows 11 with WSL 2 (verified with WSL 3.0.3 and 3.0.4) |
-| DBX | `>= 0.6.55` |
+| DBX | No product-version gate; current manifest supported by the 0.6.27 parser; see [compatibility](docs/compatibility.md) |
 | WSL containers | `wslc` from WSL 3.0+; optional — distribution pages work without it |
 | Build tools | Go 1.22+, Node.js 22+, `@dbx-app/plugin-cli` |
 

@@ -7,7 +7,7 @@ catalog lives in [`t8y2/dbx-store`](https://github.com/t8y2/dbx-store) and the D
 ## Development environment
 
 - Windows 11 with WSL (`wsl --version`) and optionally `wslc` (WSL 3.0+).
-- DBX desktop `>= 0.5.68` for manual verification.
+- DBX desktop with the required plugin host capabilities for manual verification; see [compatibility evidence](docs/compatibility.md). Do not infer a minimum product version from the SDK reference version.
 - Go 1.22+, Node.js 22+, and `@dbx-app/plugin-cli`:
 
   ```powershell
@@ -62,3 +62,5 @@ Maintainers follow [docs/releasing.md](docs/releasing.md):
 
 Official store signing and catalog merge are performed by DBX Store maintainers; plugin authors do not hold the signing
 key. Do not submit plugin source code to `t8y2/dbx-store`.
+
+Host-rule regression: `node tests/host-compatibility.mjs` runs pinned upstream Rust manifest parsers against the package (requires a working Cargo linker). It does not install or launch DBX.
