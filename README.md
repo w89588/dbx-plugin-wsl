@@ -38,12 +38,14 @@ WSL 工具与 Windows 辅助程序，详见下方权限披露。
 
 - 命令控制台：以 argv 方式执行任意 `wsl` / `wslc` 命令（不经过 shell），显示 stdout/stderr 与退出码。
 - 设置：可视化编辑 `.wslconfig` 与 wslc `settings.yaml`，自动备份。
-- 概览仪表盘、明暗主题、中英文界面、带实时日志与取消功能的任务面板。
+- 资源实时更新：通过宿主事件流接收变化，原位更新列表、状态和统计，保留滚动位置、搜索焦点与弹窗草稿。支持断线重连，页面隐藏时暂停采集。
+- 概览仪表盘、明暗主题、中英文界面、带实时日志与取消功能的任务面板。任务终态可补偿查询；当前 Sidecar 内保留最近 32 个已结束任务，最长 24 小时。
+- 配置保存携带修订号，检测外部修改，冲突时保留草稿并拒绝覆盖。
 - 侧栏与“设置 → 关于”提供 GitHub 仓库和 Issues 入口；BUG 与建议统一在 GitHub Issues 中提交。
 
 ## AI 与 MCP 接入
 
-提供 `wsl_connections`、`wsl_describe`、`wsl_read`、`wsl_write` 四个工具，覆盖插件现有全部 73 个管理接口。AI 可以查询本机 WSL 连接（发行版）及 WSLC 容器，执行生命周期管理、命令与文件读写，管理镜像、卷、网络、配置、注册表和后台任务。
+提供 `wsl_connections`、`wsl_describe`、`wsl_read`、`wsl_write` 四个工具，覆盖插件 73 个管理接口（资源订阅为 UI 专用）。AI 可以查询本机 WSL 连接（发行版）及 WSLC 容器，执行生命周期管理、命令与文件读写，管理镜像、卷、网络、配置、注册表和后台任务。
 
 通过 DBX 的外部 MCP 服务接入，工具名为 `dbx_wsl__wsl_connections` 等；需要支持插件 MCP 的 DBX **0.6.55+**。只读与写工具分别声明，写操作遵守宿主/客户端授权。当前 DBX 内置 AI 仅发现已打开的连接型插件，本插件为工作台型插件，因此本版本通过**外部 DBX MCP**使用这些能力。详见[接入与调用示例](docs/mcp.md)。
 
@@ -72,8 +74,8 @@ WSL 工具与 Windows 辅助程序，详见下方权限披露。
 | 项 | 要求 |
 | --- | --- |
 | 操作系统 | Windows 11 + WSL 2（已验证 WSL 3.0.3 / 3.0.4） |
-| DBX | `>= 0.5.68`（已验证 0.6.49） |
-| WSL 容器 | WSL 3.0+ 的 `wslc`，可选；缺失时发行版功能仍可用 |
+| DBX | `>= 0.6.55` |
+| WSL 容器 | `wslc` 可选；本插件已验证 WSL 3.0.3 / 3.0.4，缺失时发行版功能仍可用 |
 | 构建工具 | Go 1.22+、Node.js 22+、`@dbx-app/plugin-cli` |
 
 ## 安装
@@ -107,7 +109,7 @@ node node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js package .
 - **数据卷 / 网络**：管理容器存储与网络。
 - **命令控制台**：逐参数执行 `wsl` / `wslc` 命令。
 - **事件**：容器运行时实时事件。
-- **设置**：`.wslconfig` / `settings.yaml` 编辑器、刷新间隔、危险操作开关。
+- **设置**：`.wslconfig` / `settings.yaml` 编辑器、资源采集间隔、危险操作开关。
 
 ## 架构
 
@@ -123,6 +125,7 @@ Go Sidecar（backend/）
   └── wslc.exe  WSL 容器
 ```
 
+- 资源通过 `resources/subscribe` 与 `resources/update` 使用现有 stdio/宿主事件桥持续推送，不是 HTTP SSE，不新增监听端口或网络权限。后台定期采集，内容变化才推送；系统版本信息最多每分钟采集一次。
 - 长任务使用 job + `job/output` / `job/end` 事件，可取消。
 - 命令以 argv 数组传递，不拼接 shell 字符串。
 - UI 为单文件内联 CSS/JS，偏好通过 `dbxPlugin.storage` 持久化。

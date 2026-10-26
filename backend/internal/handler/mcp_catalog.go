@@ -8,6 +8,10 @@ import (
 type nameParams struct {
 	Name string `json:"name"`
 }
+type jobListParams struct {
+	IncludeCompleted bool `json:"includeCompleted"`
+}
+
 type jobParams struct {
 	JobID string `json:"jobId"`
 }
@@ -88,7 +92,7 @@ var mcpMethods = []mcpMethod{
 	{"wslc/registry/logout", false, wslc.LogoutParams{}},
 	{"console/run", false, ConsoleRunParams{}},
 	{"console/presets", true, struct{}{}},
-	{"jobs/list", true, struct{}{}},
+	{"jobs/list", true, jobListParams{}},
 	{"jobs/get", true, jobParams{}},
 	{"jobs/cancel", false, jobParams{}},
 }

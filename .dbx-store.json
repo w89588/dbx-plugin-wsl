@@ -7,5 +7,5 @@
   "source": "https://github.com/w89588/dbx-plugin-wsl",
   "homepage": "https://github.com/w89588/dbx-plugin-wsl",
   "license": "Apache-2.0",
-  "releaseNotes": "v0.1.1: declare host.binary for the existing native process execution capability; no runtime behavior changes."
+  "releaseNotes": "v0.1.5: stream resource changes through host events with incremental UI updates; reconcile job states and bound history; protect configuration writes with revisions."
 }

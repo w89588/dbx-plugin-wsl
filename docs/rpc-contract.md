@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.1.3`
+- 版本：`0.1.5`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.3"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.5"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -108,7 +108,7 @@ const off = window.dbxPlugin.onEvent((event) => {
 ```
 
 - `job/output.text` 以行为单位（保留 `\n`），保证顺序；同一 job 的 stdout/stderr 交错顺序不保证，但各自内部有序。
-- `job/end` 必定发送一次（成功、失败、取消都会）。`ok = exitCode === 0 && !error`。
+- `job/end` 必定发送一次（成功、失败、取消都会）。`status` 为权威终态，`ok = status === "completed"`，取消任务即使退出码为 0 也不得返回成功。
 - job 输出在内存中保留最近 2000 行/512 KiB，供 `jobs/get` 补偿。
 
 `jobs/get` 请求 `{ jobId }`：
@@ -126,7 +126,7 @@ const off = window.dbxPlugin.onEvent((event) => {
 }
 ```
 
-`jobs/list` 返回当前活动 job：`{ "jobs": [ { "jobId": "job-3", "method": "...", "startedAt": 1792507542000 } ] }`。
+`jobs/list` 默认返回当前活动 job；传 `{ "includeCompleted": true }` 可包含保留的已结束任务：`{ "jobs": [ { "jobId": "job-3", "method": "...", "startedAt": 1792507542000 } ] }`。
 
 ## 4. 方法
 
@@ -200,14 +200,14 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 
 ```json
 {
-  "wslconfig": { "path": "C:\\Users\\iaz00\\.wslconfig", "exists": true, "content": "[wsl2]\nmemory=8GB\n" },
-  "wslcSettings": { "path": "C:\\Users\\iaz00\\AppData\\Local\\wslc\\settings.yaml", "exists": false, "content": "" }
+  "wslconfig": { "path": "C:\\Users\\iaz00\\.wslconfig", "exists": true, "revision": "<sha256>", "content": "[wsl2]\nmemory=8GB\n" },
+  "wslcSettings": { "path": "C:\\Users\\iaz00\\AppData\\Local\\wslc\\settings.yaml", "exists": false, "revision": "<sha256>", "content": "" }
 }
 ```
 
 #### `system/config/write`
 
-请求 `{ "target": "wslconfig" | "wslc", "content": "..." }`
+请求 `{ "target": "wslconfig" | "wslc", "content": "...", "expectedRevision": "读取时返回的 revision" }`
 
 ```json
 { "path": "C:\\Users\\iaz00\\.wslconfig", "backupPath": "C:\\Users\\iaz00\\.wslconfig.bak-20261020-224500", "bytes": 42 }
@@ -698,7 +698,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 6. 长任务统一走“任务面板”：展示 job 标题、实时日志、取消按钮；`job/end` 后刷新相关列表并 toast。
 7. 破坏性操作（卸载发行版、删除容器/镜像/卷/网络、prune、shutdown）：二次确认，卸载发行版要求输入名称。
 8. 加载态/空态/错误态必须齐全；`system/info` 的 `available:false` 要在对应页显示安装提示而不是白屏。
-9. 轮询：容器列表/stats 在页面可见时默认 5s 刷新，可在设置中关闭；不在后台标签页轮询。
+9. 实时资源：页面使用宿主事件桥订阅变化；后台默认 5s 采集，仅推送变化内容。前端按资源键局部更新；隐藏页取消订阅。详见第 11 节。
 10. 单页路由：`dashboard | distros | containers | images | volumes | networks | console | events | settings`，使用 hash 路由并持久化。
 11. **注册表凭据**：镜像页提供“注册表凭据”对话框（server / username / password + 登录 / 登出）。密码只通过 `invoke("wslc/registry/login")` 交给 Sidecar，由 Sidecar 用 stdin 传给 `wslc`；UI 不持久化密码、不把密码放进日志/标题/toast，提交后立即清空密码框。仅把 `server` / `username` 存入 `dbxPlugin.storage`。
 12. 镜像相关失败：`job/end.error.code` 为 `REGISTRY_AUTH_REQUIRED` / `REGISTRY_RATE_LIMITED` / `REGISTRY_AUTH_FAILED` 时，任务面板与 toast 必须显示可读原因，并提供“去登录”入口（打开注册表凭据对话框，`server` 预填镜像所属 registry，例如 `ghcr.io`、`registry.cn-hangzhou.aliyuncs.com`）。
@@ -757,3 +757,17 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - 凭据仅经原有 registry 服务写入 stdin；参数解析失败不回显请求或解码器详情。MCP 客户端/宿主可能记录原始工具入参，优先在插件界面登录。
 
 接入、宿主兼容限制与示例见 [MCP 指南](mcp.md)。
+
+
+## 11. v0.1.5 资源流与可靠性
+
+传输沿用 `stdio-jsonl → dbxPlugin.onEvent`，不是 HTTP SSE，不新增端口、权限或 MCP 工具。
+
+- `resources/subscribe`：`{subscriptionId,resources,intervalSeconds}`。ID 为 8–100 字符；resources 为 system/distros/containers/stats/images/volumes/networks 的非空、不重复子集；间隔 2–30 秒。
+- 返回 `{subscriptionId,leaseSeconds:65,generation}`。相同 ID 与参数续租；不同参数须新 ID。每个 Sidecar 最多 8 个订阅。UI 每 20 秒续租，隐藏/退出时调用 `resources/unsubscribe`，请求 `{subscriptionId}`。失联租约自动取消采集。
+- 事件 `resources/update`：`{subscriptionId,sequence,resources:{images:{data:{images:[]}}},sampledAt}`。资源失败用 `{error:{code,message,hint,detail}}`，保留页面上一次成功数据。不同资源独立采集，单资源不重叠查询；首次推送快照，以后比较内容，仅推送变化。system 每分钟采集一次。
+- `resources/heartbeat` 每 10 秒携带 `{subscriptionId,sequence}`。页面拒绝旧订阅和重复序号；发现序号缺口、宿主重启或心跳中断时新建订阅，重新获取快照。订阅返回 generation 区分 Sidecar 重建。
+- 页面初次进入及手动操作仍可进行一次性查询；浏览器不定时查询资源列表，也不定时替换整页 DOM。
+- `job/output` 输出行及 `jobs/get.lines` 增加 sequence；`job/end` 增加 sequence 和 status（completed/failed/cancelled），ok 仅在 completed 时为 true。事件可能先于创建任务响应到达；客户端按 jobId 建立状态，以 `jobs/get` 快照补偿。
+- `jobs/list` 增加可选 `includeCompleted`（默认 false）。已结束任务保留至多 32 个、最长 24 小时，运行中任务不淘汰。记录仅存在当前 Sidecar 内，不保证宿主退出后的任务续跑或跨进程历史。
+- `system/config/read` 的每个配置对象增加 revision（包含原始文件内容和存在状态的 SHA-256）；`system/config/write` 必须携带 expectedRevision。缺失返回 INVALID_PARAMS；不匹配返回 CONFLICT，并保留原文件。写入仍备份并原子替换。检查覆盖插件并发及检查前的外部修改，不声称可锁定任意外部编辑器在检查与写入之间的写入。

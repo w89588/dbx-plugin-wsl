@@ -68,6 +68,13 @@ func TestMCPCatalogMatchesDispatch(t *testing.T) {
 		seen[m.Method] = true
 	}
 	for method := range found {
+		// UI leases depend on the host event bridge, not MCP request/response.
+		if method == "resources/subscribe" || method == "resources/unsubscribe" {
+			if seen[method] {
+				t.Fatalf("UI subscription exposed to MCP: %s", method)
+			}
+			continue
+		}
 		if !seen[method] {
 			t.Errorf("MCP missing method %s", method)
 		}

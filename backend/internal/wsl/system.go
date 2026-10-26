@@ -2,6 +2,8 @@ package wsl
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"os"
 	"path/filepath"
@@ -172,7 +174,7 @@ func (s *Service) ConfigRead(ctx context.Context) (any, *apperr.Error) {
 }
 
 func readConfigFile(path string) (map[string]any, *apperr.Error) {
-	payload := map[string]any{"path": path, "exists": false, "content": ""}
+	payload := map[string]any{"path": path, "exists": false, "content": "", "revision": configRevision(false, nil)}
 	if strings.TrimSpace(path) == "" {
 		return payload, nil
 	}
@@ -185,6 +187,7 @@ func readConfigFile(path string) (map[string]any, *apperr.Error) {
 	}
 	payload["exists"] = true
 	payload["content"] = execx.DecodeText(raw)
+	payload["revision"] = configRevision(true, raw)
 	return payload, nil
 }
 
@@ -200,9 +203,15 @@ func (s *Service) WslcSettingsPath(ctx context.Context) string {
 }
 
 // ConfigWriteParams is the request of system/config/write.
+func configRevision(exists bool, raw []byte) string {
+	hash := sha256.Sum256(append([]byte(strconv.FormatBool(exists)+":"), raw...))
+	return hex.EncodeToString(hash[:])
+}
+
 type ConfigWriteParams struct {
-	Target  string `json:"target"`
-	Content string `json:"content"`
+	ExpectedRevision string `json:"expectedRevision"`
+	Target           string `json:"target"`
+	Content          string `json:"content"`
 }
 
 // ConfigWrite implements system/config/write with backup + atomic replace.
@@ -221,6 +230,16 @@ func (s *Service) ConfigWrite(ctx context.Context, params ConfigWriteParams) (an
 	}
 	if path == "" {
 		return nil, apperr.InvalidParams("无法解析配置文件路径", "请检查用户目录环境变量", "")
+	}
+	if params.ExpectedRevision == "" {
+		return nil, apperr.InvalidParams("缺少配置版本", "请先读取配置，再携带 expectedRevision 保存", "")
+	}
+	current, err := readConfigFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if current["revision"] != params.ExpectedRevision {
+		return nil, apperr.Conflict("配置已被其他操作修改", "请保留草稿，重新读取并合并后保存", "")
 	}
 	return writeConfigFile(path, params.Content)
 }

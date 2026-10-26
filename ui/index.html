@@ -763,7 +763,7 @@ tr:hover .row-actions, tr:focus-within .row-actions{ opacity:1; }
    0. Constants
    ============================================================ */
 const HOST = window.dbxPlugin;
-const APP_VERSION = '0.1.3';
+const APP_VERSION = '0.1.5';
 const PROJECT_URL = 'https://github.com/w89588/dbx-plugin-wsl';
 const JOB_LINE_LIMIT = 2000;
 const JOB_BYTE_LIMIT = 512 * 1024;
@@ -832,7 +832,7 @@ const DICT = {
     'networks.create.title':'Create a network','networks.form.name':'Network name','networks.form.driver':'Driver','networks.form.internal':'Internal network','networks.form.ipv6':'Enable IPv6','networks.form.nameHint':'e.g. dbxnet','networks.remove.title':'Delete networks','networks.remove.message':'Delete {names}? This cannot be undone.','networks.connect.title':'Connect container to network','networks.disconnect.title':'Disconnect container from network','networks.form.network':'Network','networks.form.container':'Container','networks.connect.action':'Connect','networks.disconnect.action':'Disconnect','networks.inspect.title':'Network inspect','networks.prune.title':'Prune networks','networks.prune.message':'Remove unused networks? This cannot be undone.','networks.none':'none',
     'console.title':'Command console','console.sub':'Run wsl.exe or wslc.exe directly, argument by argument','console.tool':'Tool','console.command':'Arguments','console.placeholder':'-l -v','console.run':'Run','console.running':'Running…','console.presets':'Presets','console.history':'Recent commands','console.stdout':'stdout','console.stderr':'stderr','console.exitCode':'Exit code','console.output':'Output','console.empty.title':'Ready when you are','console.empty.body':'Pick a preset or type arguments for wsl / wslc. Output appears here.','console.argHint':'Arguments are passed one by one as argv. Quotes group words; no shell is involved.','console.parseError':'Could not parse the argument string.','console.clear':'Clear output','console.dangerous.title':'Confirm dangerous command','console.dangerous.message':'This command may stop or delete WSL resources:','console.dangerous.confirm':'Run anyway','console.noArgs':'No arguments','console.resultMeta':'{tool} · exit {code} · {duration}',
     'events.title':'Events','events.sub':'Live container runtime events','events.enable':'Start stream','events.disable':'Stop stream','events.active':'Streaming','events.inactive':'Stopped','events.pause':'Pause','events.resume':'Resume','events.paused':'Paused','events.clear':'Clear list','events.filter':'Filter events…','events.type.all':'All types','events.type.container':'Containers','events.type.image':'Images','events.type.volume':'Volumes','events.type.network':'Networks','events.type.daemon':'Daemon','events.empty.title':'No events yet','events.empty.body':'Start the stream to watch wslc events in real time.','events.startFailed':'Could not start the event stream.','events.stoppedToast':'Event stream stopped.','events.startedToast':'Event stream started.','events.col.time':'Time','events.col.type':'Type','events.col.action':'Action','events.col.actor':'Object','events.col.status':'Status','events.col.from':'From','events.detail.title':'Event details','events.buffered':'{n} buffered','events.job':'Stream task',
-    'settings.title':'Settings','settings.sub':'Configuration, polling and editor preferences','settings.interval':'Auto-refresh interval','settings.intervalDesc':'Applies to container, image, volume and network pages (overview polls at 10s or the chosen value).','settings.interval.off':'Off','settings.interval.2':'Every 2 seconds','settings.interval.5':'Every 5 seconds','settings.interval.10':'Every 10 seconds','settings.interval.30':'Every 30 seconds','settings.language':'Language','settings.languageDesc':'Auto follows the DBX host language.','settings.language.auto':'Auto (follow DBX)','settings.advanced':'Show advanced operations','settings.advancedDesc':'Reveal compact, resize, sparse, default user, save/load and other advanced actions.','settings.danger':'Show destructive operations','settings.dangerDesc':'Reveal unregister, prune, kill and shutdown actions. Confirmations are always required.','settings.stats':'Live container stats','settings.statsDesc':'Poll wslc stats while the containers page is visible.',
+    'settings.title':'Settings','settings.sub':'Configuration, live updates and editor preferences','settings.interval':'Resource sampling interval','settings.intervalDesc':'The backend pushes resource changes. Only changed content updates; hidden views pause.','settings.interval.off':'Off','settings.interval.2':'Every 2 seconds','settings.interval.5':'Every 5 seconds','settings.interval.10':'Every 10 seconds','settings.interval.30':'Every 30 seconds','settings.language':'Language','settings.languageDesc':'Auto follows the DBX host language.','settings.language.auto':'Auto (follow DBX)','settings.advanced':'Show advanced operations','settings.advancedDesc':'Reveal compact, resize, sparse, default user, save/load and other advanced actions.','settings.danger':'Show destructive operations','settings.dangerDesc':'Reveal unregister, prune, kill and shutdown actions. Confirmations are always required.','settings.stats':'Live container stats','settings.statsDesc':'Receive CPU and memory changes while the containers page is visible.',
     'settings.wslconfig.title':'.wslconfig','settings.wslconfig.desc':'Global WSL 2 configuration in your user profile.','settings.wslc.title':'wslc settings.yaml','settings.wslc.desc':'Configuration of the WSL container runtime.','settings.file.exists':'File exists','settings.file.missing':'File does not exist yet','settings.file.path':'Path','settings.file.size':'Size','settings.editor.loading':'Loading file…','settings.editor.empty':'This file is empty. Start typing to create content.','settings.editor.reload':'Reload','settings.editor.save':'Save file','settings.editor.unsaved':'Unsaved changes','settings.editor.saveConfirm':'Save changes to {path}? A timestamped backup will be created first.','settings.editor.reloadConfirm':'Discard unsaved changes and reload the file?','settings.saved':'File saved. Backup: {path}','settings.savedNoBackup':'File saved (new file, no backup needed).',
     'settings.about':'About','settings.about.version':'Plugin version','settings.about.id':'Plugin ID','settings.about.host':'Host API','settings.about.theme':'Theme','settings.about.storage':'Persistent storage','settings.about.events':'Event bridge','settings.about.permissions':'Permissions','settings.storageUnavailable':'Persistent storage is not available in this host. Settings will not survive a reload.','settings.hostCapabilities':'Host capabilities','settings.reset':'Reset UI preferences',
     'install.title':'WSL is not available','install.body':'WSL Manager could not find wsl.exe or wslc.exe on this machine. Install WSL 3.0+ (with the container runtime) and restart the plugin.','install.step1':'Enable required Windows features and install WSL:','install.step2':'Install the WSL container runtime (wslc) with the WSL 3.0+ package.','install.step3':'Run “wsl --version” in a terminal to verify, then retry.','install.command':'wsl --install','install.copy':'Copy command','install.retry':'Retry detection','install.wslMissing':'WSL is not available','install.wslMissingBody':'wsl.exe could not be resolved. Features that manage distributions are disabled.','install.wslcMissing':'wslc is not available','install.wslcMissingBody':'wslc.exe could not be resolved. Container, image, volume and network features are disabled.','install.docs':'Open WSL documentation','install.bothDown':'Neither wsl.exe nor wslc.exe was found.',
@@ -897,7 +897,7 @@ const DICT = {
     'networks.create.title':'创建网络','networks.form.name':'网络名称','networks.form.driver':'驱动','networks.form.internal':'内部网络','networks.form.ipv6':'启用 IPv6','networks.form.nameHint':'如 dbxnet','networks.remove.title':'删除网络','networks.remove.message':'删除 {names}？此操作不可撤销。','networks.connect.title':'连接容器到网络','networks.disconnect.title':'断开容器与网络的连接','networks.form.network':'网络','networks.form.container':'容器','networks.connect.action':'连接','networks.disconnect.action':'断开','networks.inspect.title':'网络检查','networks.prune.title':'清理网络','networks.prune.message':'移除未使用的网络？此操作不可撤销。','networks.none':'无',
     'console.title':'命令控制台','console.sub':'以参数数组方式直接运行 wsl.exe / wslc.exe','console.tool':'工具','console.command':'参数','console.placeholder':'-l -v','console.run':'执行','console.running':'执行中…','console.presets':'预置命令','console.history':'最近命令','console.stdout':'标准输出','console.stderr':'标准错误','console.exitCode':'退出码','console.output':'输出','console.empty.title':'准备就绪','console.empty.body':'选择预置命令或输入 wsl / wslc 参数，输出会显示在这里。','console.argHint':'参数会逐项作为 argv 传递，引号用于分组；不会经过 shell。','console.parseError':'无法解析参数串。','console.clear':'清空输出','console.dangerous.title':'确认危险命令','console.dangerous.message':'该命令可能停止或删除 WSL 资源：','console.dangerous.confirm':'仍然执行','console.noArgs':'无参数','console.resultMeta':'{tool} · 退出码 {code} · {duration}',
     'events.title':'事件','events.sub':'容器运行时实时事件','events.enable':'启动事件流','events.disable':'停止事件流','events.active':'监听中','events.inactive':'已停止','events.pause':'暂停','events.resume':'继续','events.paused':'已暂停','events.clear':'清空列表','events.filter':'筛选事件…','events.type.all':'全部类型','events.type.container':'容器','events.type.image':'镜像','events.type.volume':'数据卷','events.type.network':'网络','events.type.daemon':'守护进程','events.empty.title':'暂无事件','events.empty.body':'启动事件流即可实时查看 wslc 事件。','events.startFailed':'无法启动事件流。','events.stoppedToast':'事件流已停止。','events.startedToast':'事件流已启动。','events.col.time':'时间','events.col.type':'类型','events.col.action':'动作','events.col.actor':'对象','events.col.status':'状态','events.col.from':'来源','events.detail.title':'事件详情','events.buffered':'已缓冲 {n} 条','events.job':'事件流任务',
-    'settings.title':'设置','settings.sub':'配置、轮询与编辑器偏好','settings.interval':'自动刷新间隔','settings.intervalDesc':'作用于容器、镜像、数据卷、网络页面（概览页按 10 秒或所选值刷新）。','settings.interval.off':'关闭','settings.interval.2':'每 2 秒','settings.interval.5':'每 5 秒','settings.interval.10':'每 10 秒','settings.interval.30':'每 30 秒','settings.language':'语言','settings.languageDesc':'自动表示跟随 DBX 宿主语言。','settings.language.auto':'自动（跟随 DBX）','settings.advanced':'显示高级操作','settings.advancedDesc':'显示压缩、调整容量、稀疏磁盘、默认用户、导入导出等高级操作。','settings.danger':'显示破坏性操作','settings.dangerDesc':'显示卸载、清理、终止与关闭等操作。破坏性操作始终需要确认。','settings.stats':'容器实时统计','settings.statsDesc':'容器页可见时轮询 wslc stats。',
+    'settings.title':'设置','settings.sub':'配置、实时更新与编辑器偏好','settings.interval':'资源采集间隔','settings.intervalDesc':'后台采集资源变化并推送到当前页面，仅更新变化内容。隐藏页面时暂停。','settings.interval.off':'关闭','settings.interval.2':'每 2 秒','settings.interval.5':'每 5 秒','settings.interval.10':'每 10 秒','settings.interval.30':'每 30 秒','settings.language':'语言','settings.languageDesc':'自动表示跟随 DBX 宿主语言。','settings.language.auto':'自动（跟随 DBX）','settings.advanced':'显示高级操作','settings.advancedDesc':'显示压缩、调整容量、稀疏磁盘、默认用户、导入导出等高级操作。','settings.danger':'显示破坏性操作','settings.dangerDesc':'显示卸载、清理、终止与关闭等操作。破坏性操作始终需要确认。','settings.stats':'容器实时统计','settings.statsDesc':'容器页可见时持续接收 CPU 与内存变化。',
     'settings.wslconfig.title':'.wslconfig','settings.wslconfig.desc':'用户配置文件中的全局 WSL 2 配置。','settings.wslc.title':'wslc settings.yaml','settings.wslc.desc':'WSL 容器运行时的配置。','settings.file.exists':'文件存在','settings.file.missing':'文件尚不存在','settings.file.path':'路径','settings.file.size':'大小','settings.editor.loading':'正在读取文件…','settings.editor.empty':'文件为空，输入内容即可创建。','settings.editor.reload':'重新载入','settings.editor.save':'保存文件','settings.editor.unsaved':'有未保存的修改','settings.editor.saveConfirm':'保存对 {path} 的修改？保存前会自动创建带时间戳的备份。','settings.editor.reloadConfirm':'放弃未保存的修改并重新载入文件？','settings.saved':'文件已保存，备份：{path}','settings.savedNoBackup':'文件已保存（新文件，无需备份）。',
     'settings.about':'关于','settings.about.version':'插件版本','settings.about.id':'插件 ID','settings.about.host':'Host API','settings.about.theme':'主题','settings.about.storage':'持久化存储','settings.about.events':'事件桥接','settings.about.permissions':'权限','settings.storageUnavailable':'当前宿主不支持持久化存储，设置不会在刷新后保留。','settings.hostCapabilities':'宿主能力','settings.reset':'重置界面偏好',
     'install.title':'WSL 不可用','install.body':'未能在本机找到 wsl.exe 或 wslc.exe。请安装 WSL 3.0+（含容器运行时）后重启插件。','install.step1':'启用所需的 Windows 功能并安装 WSL：','install.step2':'通过 WSL 3.0+ 安装包安装 WSL 容器运行时（wslc）。','install.step3':'在终端运行“wsl --version”确认安装成功，然后重试。','install.command':'wsl --install','install.copy':'复制命令','install.retry':'重新检测','install.wslMissing':'WSL 不可用','install.wslMissingBody':'无法解析 wsl.exe，发行版管理功能已禁用。','install.wslcMissing':'wslc 不可用','install.wslcMissingBody':'无法解析 wslc.exe，容器、镜像、数据卷与网络功能已禁用。','install.docs':'打开 WSL 文档','install.bothDown':'未找到 wsl.exe，也未找到 wslc.exe。',
@@ -1400,6 +1400,7 @@ function ensureJob(jobId, meta) {
   let job = S.jobs.get(jobId);
   if (job) {
     if (!job.method && info.method) job.method = info.method;
+    if (!job.params && info.params) job.params = info.params;
     if (info.title && job.title === jobId) job.title = info.title;
     return job;
   }
@@ -1418,6 +1419,7 @@ function ensureJob(jobId, meta) {
     result: null,
     durationMs: null,
     cancelRequested: false,
+    sequence: 0,
     cardEl: null,
     logEl: null,
     resultEl: null,
@@ -1542,7 +1544,8 @@ async function startJob(method, params, options) {
   const jobId = res && res.jobId;
   if (!jobId) throw toError({ message: 'The sidecar did not return a job id', data: { code: 'INTERNAL' }, rc: res });
   const job = ensureJob(jobId, { method, params, title: (options && options.title) || jobTitleFor(method, params) });
-  toast('info', t('toast.jobStarted', { title: job.title }));
+  reconcileJob(job);
+  if (job.status === 'running') toast('info', t('toast.jobStarted', { title: job.title }));
   return job;
 }
 async function cancelJob(jobId) {
@@ -1560,6 +1563,9 @@ async function cancelJob(jobId) {
 function onJobOutput(params) {
   if (!params || !params.jobId) return;
   const job = ensureJob(params.jobId, { method: '', title: params.jobId });
+  if (params.sequence && params.sequence <= job.sequence) return;
+  if (params.sequence && params.sequence > job.sequence + 1) { reconcileJob(job); return; }
+  job.sequence = params.sequence || job.sequence;
   appendJobLine(job, params.stream, params.text);
   if (S.ui.dialog && S.ui.dialog.jobId === params.jobId) appendDialogLog(params.stream, params.text);
 }
@@ -1618,10 +1624,12 @@ function renderJobAuth(job) {
 function onJobEnd(params) {
   if (!params || !params.jobId) return;
   const known = S.jobs.get(params.jobId);
+  if (known && params.sequence && params.sequence <= known.sequence) return;
   const job = known || ensureJob(params.jobId, { title: params.jobId });
   if (known && !known.method) { invoke('jobs/get', { jobId: params.jobId }).then((info) => { if (info && info.method) { job.method = info.method; job.title = jobTitleFor(info.method, info.params); job.params = info.params || job.params; } }).catch(() => {}); }
-  job.status = job.cancelRequested ? 'cancelled' : jobEndedState(params);
-  if (!params.ok && !params.error && job.cancelRequested) job.status = 'cancelled';
+  job.status = params.status || jobEndedState(params);
+  job.sequence = Math.max(job.sequence, params.sequence || 0);
+  if (params.sequence) reconcileJob(job); // snapshot also recovers missing final output
   job.exitCode = params.exitCode;
   job.error = params.error || null;
   job.result = params.result || null;
@@ -1663,27 +1671,35 @@ function cleanJobs() {
   if (S.jobs.size === 0) S.ui.jobsOpen = false;
   updateJobPanel();
 }
+async function reconcileJob(job) {
+  if (job.reconciling) { job.reconcileAgain = true; return; }
+  job.reconciling = true;
+  try {
+    const info = await invoke('jobs/get', {jobId:job.id});
+    if (!info || (info.sequence || 0) < job.sequence) return;
+    job.sequence = info.sequence || 0;
+    job.method = info.method || job.method;
+    job.title = jobTitleFor(job.method, job.params);
+    job.status = info.status || job.status;
+    job.exitCode = info.exitCode; job.error = info.error; job.durationMs = info.durationMs;
+    job.lines = []; job.lineCount = 0; job.bytes = 0;
+    if (job.logEl) job.logEl.replaceChildren();
+    for (const line of info.lines || []) appendJobLine(job, line.stream, line.text);
+    if (info.result) setJobResult(job, t('jobs.result') + ': ' + JSON.stringify(info.result));
+    updateJobStatus(job); renderJobAuth(job);
+  } catch (error) { /* A retired sidecar's jobs cannot be resumed. */ }
+  finally { job.reconciling = false; if (job.reconcileAgain) { job.reconcileAgain = false; reconcileJob(job); } }
+}
 async function resumeJobs() {
   try {
-    const res = await invoke('jobs/list', {});
-    const jobs = (res && res.jobs) || [];
-    for (const item of jobs) {
-      const job = ensureJob(item.jobId, { method: item.method, title: jobTitleFor(item.method), startedAt: item.startedAt });
-      if (item.method === 'wslc/events/start' && !S.events.active) { S.events.active = true; S.events.jobId = item.jobId; }
-      invoke('jobs/get', { jobId: item.jobId }).then((info) => {
-        if (!info) return;
-        for (const line of info.lines || []) appendJobLine(job, line.stream, line.text);
-        if (info.status && info.status !== 'running') {
-          job.status = info.status; job.exitCode = info.exitCode; job.error = info.error; job.durationMs = info.durationMs;
-          if (info.params) job.params = info.params;
-          if (info.result) setJobResult(job, t('jobs.result') + ': ' + JSON.stringify(info.result));
-          if (info.error && isRegistryAuthCode(info.error.code)) renderJobAuth(job);
-        }
-        updateJobStatus(job);
-      }).catch(() => {});
+    const res = await invoke('jobs/list', {includeCompleted:true});
+    for (const item of (res && res.jobs) || []) {
+      const job = ensureJob(item.jobId, {method:item.method, title:jobTitleFor(item.method), startedAt:item.startedAt});
+      await reconcileJob(job);
+      if (item.method === 'wslc/events/start' && job.status === 'running') { S.events.active = true; S.events.jobId = item.jobId; }
     }
     updateJobPanel();
-  } catch (error) { /* jobs/list is optional */ }
+  } catch (error) { /* Older hosts may not expose job history. */ }
 }
 
 /* ============================================================
@@ -1816,7 +1832,8 @@ function handleHostMessage(message) {
   const method = message.method || (message.detail && message.detail.method);
   const params = message.params || (message.detail && message.detail.params) || {};
   if (!method) return;
-  if (method === 'job/output') onJobOutput(params);
+  if (method === 'resources/update' || method === 'resources/heartbeat') onResourceEvent(method, params);
+  else if (method === 'job/output') onJobOutput(params);
   else if (method === 'job/end') onJobEnd(params);
   else if (method === 'wslc/event') onWslcEvent(params);
 }
@@ -1842,13 +1859,17 @@ function requestRender() {
 async function loadSystem(options) {
   const opts = options || {};
   if (S.system.status === 'loading') return;
+  const streamVersion = S.system.streamVersion || 0;
   S.system.status = 'loading';
   if (!opts.silent) requestRender();
   try {
-    S.system.info = await invoke('system/info', {}, { timeoutMs: 60000 });
+    const info = await invoke('system/info', {}, { timeoutMs: 60000 });
+    if ((S.system.streamVersion || 0) !== streamVersion) return;
+    S.system.info = info;
     S.system.error = null;
     S.system.status = 'ready';
   } catch (error) {
+    if ((S.system.streamVersion || 0) !== streamVersion) return;
     S.system.error = toError(error);
     S.system.status = 'error';
   }
@@ -1859,10 +1880,12 @@ async function loadDistros(options) {
   const opts = options || {};
   const state = S.distros;
   if (state.status === 'loading') return;
+  const streamVersion = state.streamVersion || 0;
   state.status = 'loading';
   if (!opts.silent && state.items.length === 0) requestRender();
   try {
     const res = await invoke('wsl/distros/list', {}, { timeoutMs: 60000 });
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.items = Array.isArray(res && res.distros) ? res.distros : [];
     state.defaultDistro = (res && res.defaultDistro) || '';
     state.defaultVersion = res && res.defaultVersion;
@@ -1870,6 +1893,7 @@ async function loadDistros(options) {
     state.error = null;
     state.status = 'ready';
   } catch (error) {
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.error = toError(error);
     state.status = 'error';
   }
@@ -1880,15 +1904,18 @@ async function loadContainers(options) {
   const opts = options || {};
   const state = S.containers;
   if (state.status === 'loading') return;
+  const streamVersion = state.streamVersion || 0;
   state.status = 'loading';
   if (!opts.silent && state.items.length === 0) requestRender();
   try {
     const res = await invoke('wslc/containers/list', { all: true }, { timeoutMs: 60000 });
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.items = Array.isArray(res && res.containers) ? res.containers : [];
     state.count = res && typeof res.count === 'number' ? res.count : state.items.length;
     state.error = null;
     state.status = 'ready';
   } catch (error) {
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.error = toError(error);
     state.status = 'error';
   }
@@ -1900,9 +1927,11 @@ async function loadStats(options) {
   const opts = options || {};
   const state = S.stats;
   if (state.status === 'loading') return;
+  const streamVersion = state.streamVersion || 0;
   state.status = 'loading';
   try {
     const res = await invoke('wslc/containers/stats', { all: false }, { timeoutMs: 60000 });
+    if ((state.streamVersion || 0) !== streamVersion) return;
     const items = Array.isArray(res && res.stats) ? res.stats : [];
     const map = {};
     for (const stat of items) {
@@ -1912,6 +1941,7 @@ async function loadStats(options) {
     }
     state.items = items; state.map = map; state.error = null; state.status = 'ready';
   } catch (error) {
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.error = toError(error);
     state.status = 'error';
   }
@@ -1922,13 +1952,16 @@ async function loadImages(options) {
   const opts = options || {};
   const state = S.images;
   if (state.status === 'loading') return;
+  const streamVersion = state.streamVersion || 0;
   state.status = 'loading';
   if (!opts.silent && state.items.length === 0) requestRender();
   try {
     const res = await invoke('wslc/images/list', {}, { timeoutMs: 60000 });
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.items = Array.isArray(res && res.images) ? res.images : [];
     state.error = null; state.status = 'ready';
-  } catch (error) { state.error = toError(error); state.status = 'error'; }
+  } catch (error) {
+    if ((state.streamVersion || 0) !== streamVersion) return; state.error = toError(error); state.status = 'error'; }
   state.at = Date.now();
   requestRender(); syncChrome();
 }
@@ -1936,13 +1969,16 @@ async function loadVolumes(options) {
   const opts = options || {};
   const state = S.volumes;
   if (state.status === 'loading') return;
+  const streamVersion = state.streamVersion || 0;
   state.status = 'loading';
   if (!opts.silent && state.items.length === 0) requestRender();
   try {
     const res = await invoke('wslc/volumes/list', {}, { timeoutMs: 60000 });
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.items = Array.isArray(res && res.volumes) ? res.volumes : [];
     state.error = null; state.status = 'ready';
-  } catch (error) { state.error = toError(error); state.status = 'error'; }
+  } catch (error) {
+    if ((state.streamVersion || 0) !== streamVersion) return; state.error = toError(error); state.status = 'error'; }
   state.at = Date.now();
   requestRender(); syncChrome();
 }
@@ -1950,13 +1986,16 @@ async function loadNetworks(options) {
   const opts = options || {};
   const state = S.networks;
   if (state.status === 'loading') return;
+  const streamVersion = state.streamVersion || 0;
   state.status = 'loading';
   if (!opts.silent && state.items.length === 0) requestRender();
   try {
     const res = await invoke('wslc/networks/list', {}, { timeoutMs: 60000 });
+    if ((state.streamVersion || 0) !== streamVersion) return;
     state.items = Array.isArray(res && res.networks) ? res.networks : [];
     state.error = null; state.status = 'ready';
-  } catch (error) { state.error = toError(error); state.status = 'error'; }
+  } catch (error) {
+    if ((state.streamVersion || 0) !== streamVersion) return; state.error = toError(error); state.status = 'error'; }
   state.at = Date.now();
   requestRender(); syncChrome();
 }
@@ -2134,7 +2173,7 @@ function navigate(route, options) {
   renderPage({ force: true, resetScroll: true });
   pageEnter(route);
   persistUiSoon();
-  setupPolling();
+  setupResourceStream();
 }
 function pageEnter(route) {
   const page = PAGE[route];
@@ -2148,10 +2187,49 @@ function isEditing() {
   if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return false;
   return !!el.closest('#page') || !!el.closest('#dialog-root') || !!el.closest('#drawer');
 }
+function nodeKey(node) {
+  if (node.nodeType !== 1) return '';
+  if (node.dataset.resourceKey) return 'resource:' + node.dataset.resourceKey;
+  if (node.id) return 'id:' + node.id;
+  if (node.dataset.focusKey) return 'focus:' + node.dataset.focusKey;
+  return '';
+}
+function patchContent(parent, html) {
+  const template = document.createElement('template'); template.innerHTML = html;
+  patchChildren(parent, template.content);
+}
+function patchChildren(parent, desired) {
+  const keyed = new Map(Array.from(parent.childNodes).map(n => [nodeKey(n), n]).filter(([key]) => key));
+  let cursor = parent.firstChild;
+  for (const next of Array.from(desired.childNodes)) {
+    const key = nodeKey(next);
+    let current = key ? keyed.get(key) : cursor;
+    if (current && !key && nodeKey(current)) current = null;
+    if (!current || current.nodeType !== next.nodeType || current.nodeName !== next.nodeName) {
+      current = next.cloneNode(true); parent.insertBefore(current, cursor);
+    } else {
+      if (current !== cursor) parent.insertBefore(current, cursor);
+      if (current.nodeType === 3 || current.nodeType === 8) {
+        if (current.nodeValue !== next.nodeValue) current.nodeValue = next.nodeValue;
+      } else {
+        const editing = current === document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(current.tagName);
+        if (!editing) {
+          for (const attr of Array.from(current.attributes)) if (!next.hasAttribute(attr.name)) current.removeAttribute(attr.name);
+          for (const attr of Array.from(next.attributes)) if (current.getAttribute(attr.name) !== attr.value) current.setAttribute(attr.name, attr.value);
+          if (current.tagName === 'INPUT') { if (current.value !== next.value) current.value = next.value; current.checked = next.checked; }
+          if (current.tagName === 'TEXTAREA' && current.value !== next.value) current.value = next.value;
+          patchChildren(current, next);
+          if (current.tagName === 'SELECT' && current.value !== next.value) current.value = next.value;
+        }
+      }
+    }
+    cursor = current.nextSibling;
+  }
+  while (cursor) { const next = cursor.nextSibling; cursor.remove(); cursor = next; }
+}
 function renderPage(options) {
   const opts = options || {};
   if (!S.booted) return;
-  if (!opts.force && isEditing()) return;
   const content = $('#page');
   if (!content) return;
   const scroll = content.scrollTop;
@@ -2159,18 +2237,21 @@ function renderPage(options) {
   const focusKey = active && active.dataset ? active.dataset.focusKey : null;
   let selection = null;
   try { if (focusKey && typeof active.selectionStart === 'number') selection = [active.selectionStart, active.selectionEnd]; } catch (error) { /* ignore */ }
-  content.innerHTML = pageHtml(S.route);
+  const html = pageHtml(S.route);
+  if (opts.force) content.innerHTML = html;
+  else patchContent(content, html);
   if (focusKey) {
     const el = content.querySelector('[data-focus-key="' + focusKey + '"]');
     if (el) {
       try { el.focus({ preventScroll: true }); if (selection) el.setSelectionRange(selection[0], selection[1]); } catch (error) { /* ignore */ }
     }
   }
+  if (!opts.force && active && active.isConnected && document.activeElement !== active) active.focus({preventScroll:true});
   content.scrollTop = opts.resetScroll ? 0 : scroll;
   syncChrome();
 }
 function pageHtml(route) {
-  if (S.system.status === 'error') {
+  if (S.system.status === 'error' && !S.system.info) {
     return '<div class="fade-in">' + errorHtmlPage(S.system.error) + '</div>';
   }
   if (S.system.status === 'ready' && S.system.info && !hasWsl() && !hasWslc()) {
@@ -2209,33 +2290,79 @@ function refreshRoute(route, silent) {
       if (!silent) toast('success', t('toast.refreshed'));
     });
 }
-function setupPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  const page = PAGE[S.route];
-  const interval = pollInterval();
-  if (!page || !page.poll || !interval) return;
-  pollTimer = setInterval(() => {
-    if (document.visibilityState !== 'visible') return;
-    if (S.ui.dialog || isEditing()) return;
-    const current = PAGE[S.route];
-    if (current && current.poll) current.poll();
-  }, interval);
+// The host event bridge is the streaming transport (no iframe HTTP listener).
+const resourceFeed = { id: '', signature: '', sequence: 0, heardAt: 0, timer: null, status: 'off', generation: '' };
+function streamResources() {
+  if (!S.settings.interval || document.visibilityState !== 'visible') return [];
+  const routes = { dashboard: ['system','distros','containers','images','volumes','networks'], distros: ['distros'], containers: ['containers'], images: ['images'], volumes: ['volumes'], networks: ['networks'] };
+  const resources = (routes[S.route] || []).slice();
+  if (S.route === 'containers' && S.settings.stats) resources.push('stats');
+  return resources;
 }
-let pollTimer = null;
-function pollInterval() {
-  if (!S.settings.interval) return 0;
-  const base = S.settings.interval * 1000;
-  if (S.route === 'dashboard') return Math.max(10000, base);
-  if (['containers', 'images', 'volumes', 'networks'].includes(S.route)) return base;
-  return 0;
+function stopResourceStream() {
+  const id = resourceFeed.id;
+  clearTimeout(resourceFeed.timer);
+  Object.assign(resourceFeed, {id:'', signature:'', sequence:0, status:'off', generation:''});
+  if (id) invoke('resources/unsubscribe', {subscriptionId:id}, {timeoutMs:5000}).catch(() => {});
+}
+function setupResourceStream() {
+  const resources = streamResources();
+  const interval = Math.max(2, Math.min(30, Number(S.settings.interval) || 5));
+  const signature = resources.join(',') + ':' + interval;
+  if (resourceFeed.id && resourceFeed.signature === signature) return;
+  stopResourceStream();
+  if (!resources.length) return;
+  Object.assign(resourceFeed, {id: 'view-' + Date.now() + '-' + Math.random().toString(36).slice(2), signature, heardAt:Date.now(), status:'connecting'});
+  const id = resourceFeed.id;
+  const renew = async () => {
+    if (resourceFeed.id !== id) return;
+    try {
+      const subscription = await invoke('resources/subscribe', {subscriptionId:id, resources, intervalSeconds:interval}, {timeoutMs:10000});
+      if (resourceFeed.id !== id) return;
+      if (subscription.generation && resourceFeed.generation && subscription.generation !== resourceFeed.generation) { stopResourceStream(); setupResourceStream(); return; }
+      resourceFeed.generation = subscription.generation || '';
+      if (Date.now() - resourceFeed.heardAt > 35000) throw new Error('Stream heartbeat lost');
+      resourceFeed.timer = setTimeout(renew, 20000);
+    } catch (error) {
+      if (resourceFeed.id !== id) return;
+      resourceFeed.status = 'reconnecting'; requestRender();
+      resourceFeed.timer = setTimeout(() => { if (resourceFeed.id === id) { stopResourceStream(); setupResourceStream(); } }, 5000);
+    }
+  };
+  renew();
+}
+function onResourceEvent(method, params) {
+  if (!resourceFeed.id || params.subscriptionId !== resourceFeed.id) return;
+  resourceFeed.heardAt = Date.now();
+  const wasLive = resourceFeed.status === 'live';
+  resourceFeed.status = 'live';
+  if (method === 'resources/heartbeat') { if (params.sequence != null && params.sequence !== resourceFeed.sequence) { stopResourceStream(); setupResourceStream(); return; } for (const job of S.jobs.values()) if (job.status === 'running') reconcileJob(job); if (!wasLive) requestRender(); return; }
+  if (!Number.isSafeInteger(params.sequence) || params.sequence <= resourceFeed.sequence) return;
+  if (params.sequence !== resourceFeed.sequence + 1) { stopResourceStream(); setupResourceStream(); return; }
+  resourceFeed.sequence = params.sequence;
+  for (const [name, payload] of Object.entries(params.resources || {})) {
+    if (!['system','distros','containers','stats','images','volumes','networks'].includes(name)) continue;
+    const state = S[name];
+    state.streamVersion = (state.streamVersion || 0) + 1;
+    if (payload.error) { state.error = toError(payload.error); state.status = 'error'; continue; }
+    const data = payload.data || {};
+    if (name === 'system') state.info = data;
+    else {
+      state.items = Array.isArray(data[name]) ? data[name] : [];
+      state.count = data.count == null ? state.items.length : data.count;
+      if (name === 'distros') { state.defaultDistro = data.defaultDistro || ''; state.defaultVersion = data.defaultVersion; }
+      if (name === 'stats') {
+        state.map = {};
+        for (const item of state.items) for (const key of [item.id, item.shortId, item.name]) if (key) state.map[key] = item;
+      }
+    }
+    state.error = null; state.status = 'ready'; state.at = params.sampledAt || Date.now();
+  }
+  requestRender(); syncChrome();
 }
 function setupVisibility() {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      if (pollInterval()) refreshRoute(S.route, true);
-      setupPolling();
-    } else if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  });
+  document.addEventListener('visibilitychange', setupResourceStream);
+  window.addEventListener('pagehide', stopResourceStream);
 }
 
 /* ============================================================
@@ -2350,7 +2477,6 @@ const PAGE = {};
 PAGE.dashboard = {
   enter() { this.refresh(); },
   refresh() { loadSystem({ silent: true }); loadDistros({ silent: true }); loadContainers({ silent: true }); loadImages({ silent: true }); loadVolumes({ silent: true }); loadNetworks({ silent: true }); },
-  poll() { this.refresh(); },
   html() {
     const sys = S.system, info = sys.info || {};
     if (sys.status === 'loading' && !info) return dashboardSkeleton();
@@ -2459,13 +2585,13 @@ PAGE.distros = {
     const state = S.distros;
     const query = S.filters.distros;
     const items = (state.items || []).filter((d) => matchFilter(query, [d.name, d.state, d.version, d.basePath]));
-    const toolbar = '<div class="toolbar">' +
+    const toolbar = '<div class="toolbar" data-resource-key="toolbar">' +
       '<button class="btn primary" type="button" data-act="distros.install">' + icon('plus', 'sm') + esc(t('distros.install')) + '</button>' +
       '<button class="btn" type="button" data-act="distros.import">' + icon('upload', 'sm') + esc(t('distros.import')) + '</button>' +
       '<button class="btn" type="button" data-act="idle.settings">' + icon('sliders', 'sm') + esc(t('idle.title')) + '</button>' +
       '<div class="search">' + icon('search') + '<input type="search" data-bind="filter" data-key="distros" data-focus-key="filter-distros" value="' + attr(query) + '" placeholder="' + attr(t('distros.search')) + '" aria-label="' + attr(t('distros.search')) + '" /></div>' +
       '<span class="grow"></span>' + filterInfo(items.length, (state.items || []).length) +
-      '<span class="small faint nowrap">' + fmtNum(items.length) + ' ' + esc(t('nav.distros')) + '</span>' +
+      '<span class="auto-refresh"><span class="live-dot"></span>' + esc(pollIntervalText()) + '</span><span class="small faint nowrap">' + fmtNum(items.length) + ' ' + esc(t('nav.distros')) + '</span>' +
       '<button class="icon-btn" type="button" data-act="page.refresh" title="' + attr(t('common.refresh')) + '">' + icon('refresh') + '</button>' +
       '</div>';
     const head = '<thead><tr><th>' + esc(t('distros.col.name')) + '</th><th>' + esc(t('distros.col.state')) + '</th><th>' + esc(t('distros.col.version')) + '</th><th class="hide-sm">' + esc(t('distros.col.vhd')) + '</th><th class="hide-sm">' + esc(t('distros.col.path')) + '</th><th style="text-align:right">' + esc(t('distros.col.actions')) + '</th></tr></thead>';
@@ -2486,7 +2612,7 @@ PAGE.distros = {
           iconAction('info', t('distros.action.detail'), 'distros.detail', { name: dist.name }) +
           iconAction('more', t('distros.action.manage'), 'distros.manage', { name: dist.name }) +
           '</div>';
-        return '<tr>' +
+        return '<tr data-resource-key="' + attr(dist.name) + '">' +
           '<td><div class="cell-main"><span class="truncate" style="max-width:190px" title="' + attr(dist.name) + '">' + esc(dist.name) + '</span>' + (dist.isDefault ? '<span class="badge accent" style="height:17px;font-size:9.5px">' + esc(t('common.default')) + '</span>' : '') + '</div><div class="cell-sub mono">' + esc((dist.guid || '').slice(0, 14)) + '</div></td>' +
           '<td>' + stateBadge(dist.state) + '</td>' +
           '<td><span class="chip">v' + esc(dist.version || '?') + '</span></td>' +
@@ -2495,7 +2621,7 @@ PAGE.distros = {
           '<td>' + actions + '</td></tr>';
       }).join('') + '</tbody></table></div>';
     }
-    return pageShell(toolbar + stateError(state, 'distros') + (state.error ? '<div class="mt12"></div>' : '') + '<div class="card table-card">' + body + '</div>');
+    return pageShell(toolbar + stateError(state, 'distros') + (state.error ? '<div class="mt12"></div>' : '') + '<div class="card table-card" data-resource-key="table-card">' + body + '</div>');
   },
 };
 function distroByName(name) { return (S.distros.items || []).find((d) => d.name === name) || null; }
@@ -2599,7 +2725,8 @@ function openInstallDistroDialog() {
       try {
         const job = await startJob('wsl/distros/install', params);
         closeDialog('started');
-        toast('info', t('toast.jobStarted', { title: job.title }));
+        reconcileJob(job);
+  if (job.status === 'running') toast('info', t('toast.jobStarted', { title: job.title }));
       } catch (error) { setDialogError(error); return false; }
       return false;
     },
@@ -2817,14 +2944,13 @@ async function runDistroExec(name) {
 PAGE.containers = {
   enter() { loadContainers(); loadStats({ silent: true }); },
   refresh() { loadContainers({ silent: true }); loadStats({ silent: true }); loadSystem({ silent: true }); },
-  poll() { loadContainers({ silent: true }); loadStats({ silent: true }); },
   html() {
     const state = S.containers;
     const statsOn = !!S.settings.stats;
     const all = state.items || [];
     let items = all.filter((c) => S.show.containersStopped || containerRunning(c));
     items = items.filter((c) => matchFilter(S.filters.containers, [c.name, c.id, c.shortId, c.image, c.state, c.status, c.ports]));
-    const toolbar = '<div class="toolbar">' +
+    const toolbar = '<div class="toolbar" data-resource-key="toolbar">' +
       '<button class="btn primary" type="button" data-act="containers.run">' + icon('plus', 'sm') + esc(t('containers.run')) + '</button>' +
       (showDanger() ? '<button class="btn" type="button" data-act="containers.prune">' + icon('trash', 'sm') + esc(t('containers.prune')) + '</button>' : '') +
       '<div class="search">' + icon('search') + '<input type="search" data-bind="filter" data-key="containers" data-focus-key="filter-containers" value="' + attr(S.filters.containers) + '" placeholder="' + attr(t('containers.search')) + '" aria-label="' + attr(t('containers.search')) + '" /></div>' +
@@ -2852,7 +2978,7 @@ PAGE.containers = {
           iconAction('terminal', t('containers.action.exec'), 'containers.exec', { id: c.id }) +
           iconAction('info', t('containers.action.inspect'), 'containers.inspect', { id: c.id }) +
           iconAction('more', t('common.more'), 'containers.manage', { id: c.id }) + '</div>';
-        return '<tr>' +
+        return '<tr data-resource-key="' + attr(c.id) + '">' +
           '<td><div class="cell-main"><span class="truncate" style="max-width:200px" title="' + attr(c.name || c.id) + '">' + esc(c.name || '—') + '</span>' + (c.health ? '<span class="badge warn" style="height:17px;font-size:9.5px">' + esc(c.health) + '</span>' : '') + '</div><div class="cell-sub mono">' + esc(c.shortId || (c.id || '').slice(0, 12)) + '</div></td>' +
           '<td>' + stateBadge(c.state) + '<div class="cell-sub">' + esc(c.status || '') + '</div></td>' +
           '<td class="hide-sm"><span class="cell-mono">' + esc(c.image || '—') + '</span></td>' +
@@ -2861,14 +2987,16 @@ PAGE.containers = {
           statsCells + '<td>' + actions + '</td></tr>';
       }).join('') + '</tbody></table></div>';
     }
-    return pageShell(toolbar + stateError(state, 'containers') + '<div class="card table-card">' + body + '</div>');
+    return pageShell(toolbar + stateError(state, 'containers') + '<div class="card table-card" data-resource-key="table-card">' + body + '</div>');
   },
 };
 function pollIntervalText() {
-  if (!S.settings.interval) return isZh() ? '自动刷新已关闭' : 'Auto-refresh off';
-  if (S.route === 'dashboard') return isZh() ? '每 10 秒刷新' : 'Refreshes every 10s';
-  return isZh() ? '每 ' + S.settings.interval + ' 秒刷新' : 'Refreshes every ' + S.settings.interval + 's';
+  if (!S.settings.interval) return isZh() ? '实时更新已关闭' : 'Live updates off';
+  if (resourceFeed.status === 'reconnecting') return isZh() ? '连接中断，正在重连' : 'Reconnecting';
+  if (resourceFeed.status !== 'live') return isZh() ? '正在连接实时更新' : 'Connecting';
+  return isZh() ? '实时更新' : 'Live updates';
 }
+
 function containerById(id) { return (S.containers.items || []).find((c) => c.id === id || c.shortId === id || c.name === id) || null; }
 function containerName(id) { const c = containerById(id); return c ? (c.name || c.shortId || id) : id; }
 function openRunContainerDialog() {
@@ -3077,13 +3205,12 @@ function openInspectDrawer(options) {
 PAGE.images = {
   enter() { loadImages(); },
   refresh() { loadImages({ silent: true }); loadSystem({ silent: true }); },
-  poll() { loadImages({ silent: true }); },
   html() {
     const state = S.images;
     const all = state.items || [];
     const items = all.filter((img) => matchFilter(S.filters.images, [img.repository, img.tag, img.id, img.size, img.digest]));
     const advanced = showAdvanced();
-    const toolbar = '<div class="toolbar">' +
+    const toolbar = '<div class="toolbar" data-resource-key="toolbar">' +
       '<button class="btn primary" type="button" data-act="images.pull">' + icon('download', 'sm') + esc(t('images.pull')) + '</button>' +
       '<button class="btn" type="button" data-act="images.registry">' + icon('key', 'sm') + esc(t('images.registry')) + '</button>' +
       (advanced ? '<button class="btn" type="button" data-act="images.build">' + icon('package', 'sm') + esc(t('images.build')) + '</button>' : '') +
@@ -3107,7 +3234,7 @@ PAGE.images = {
           iconAction('tag', t('images.action.tag'), 'images.tag', { ref }) +
           (advanced ? iconAction('upload', t('images.action.save'), 'images.save.one', { ref }) : '') +
           iconAction('trash', t('images.action.remove'), 'images.remove', { ref }) + '</div>';
-        return '<tr>' +
+        return '<tr data-resource-key="' + attr(img.id + ':' + img.repository + ':' + img.tag) + '">' +
           '<td><div class="cell-main"><span class="truncate" style="max-width:200px" title="' + attr(img.repository) + '">' + esc(img.repository || '<none>') + '</span></div><div class="cell-sub mono">' + esc(img.digest || '') + '</div></td>' +
           '<td><span class="chip">' + esc(img.tag || '<none>') + '</span></td>' +
           '<td class="hide-sm mono small">' + esc(img.id || '—') + '</td>' +
@@ -3117,7 +3244,7 @@ PAGE.images = {
           '<td>' + actions + '</td></tr>';
       }).join('') + '</tbody></table></div>';
     }
-    return pageShell(toolbar + stateError(state, 'images') + '<div class="card table-card">' + body + '</div>');
+    return pageShell(toolbar + stateError(state, 'images') + '<div class="card table-card" data-resource-key="table-card">' + body + '</div>');
   },
 };
 function dialogJobBox() {
@@ -3418,12 +3545,11 @@ function toggleRegistryPassword() {
 PAGE.volumes = {
   enter() { loadVolumes(); },
   refresh() { loadVolumes({ silent: true }); },
-  poll() { loadVolumes({ silent: true }); },
   html() {
     const state = S.volumes;
     const all = state.items || [];
     const items = all.filter((v) => matchFilter(S.filters.volumes, [v.name, v.driver, v.mountpoint, v.labels]));
-    const toolbar = '<div class="toolbar">' +
+    const toolbar = '<div class="toolbar" data-resource-key="toolbar">' +
       '<button class="btn primary" type="button" data-act="volumes.create">' + icon('plus', 'sm') + esc(t('volumes.create')) + '</button>' +
       (showDanger() ? '<button class="btn" type="button" data-act="volumes.prune">' + icon('trash', 'sm') + esc(t('volumes.prune')) + '</button>' : '') +
       '<div class="search">' + icon('search') + '<input type="search" data-bind="filter" data-key="volumes" data-focus-key="filter-volumes" value="' + attr(S.filters.volumes) + '" placeholder="' + attr(t('volumes.search')) + '" aria-label="' + attr(t('volumes.search')) + '" /></div>' +
@@ -3436,7 +3562,7 @@ PAGE.volumes = {
     else if (state.status === 'error' && !all.length) body = '<div class="table-empty">' + errorBannerHtml(state.error, { scope: 'volumes' }) + '</div>';
     else if (!items.length) body = emptyTable({ title: all.length ? t('common.noData') : t('volumes.empty.title'), body: all.length ? t('volumes.search') : t('volumes.empty.body'), cta: all.length ? '' : t('volumes.empty.cta'), act: 'volumes.create', art: 'db' });
     else {
-      body = '<div class="table-scroll"><table class="table">' + head + '<tbody>' + items.map((v) => '<tr>' +
+      body = '<div class="table-scroll"><table class="table">' + head + '<tbody>' + items.map((v) => '<tr data-resource-key="' + attr(v.name) + '">' +
         '<td><div class="cell-main">' + icon('db', 'sm') + '<span class="truncate" style="max-width:200px" title="' + attr(v.name) + '">' + esc(v.name) + '</span></div></td>' +
         '<td class="hide-sm"><span class="chip">' + esc(v.driver || '—') + '</span></td>' +
         '<td class="hide-sm"><span class="path-text mono small" title="' + attr(v.mountpoint) + '">' + esc(v.mountpoint || '—') + '</span></td>' +
@@ -3445,7 +3571,7 @@ PAGE.volumes = {
         '<td class="hide-sm"><span class="small muted">' + esc(v.labels || '—') + '</span></td>' +
         '<td><div class="row-actions">' + iconAction('info', t('common.inspect'), 'volumes.inspect', { name: v.name }) + iconAction('trash', t('common.delete'), 'volumes.remove', { name: v.name }) + '</div></td></tr>').join('') + '</tbody></table></div>';
     }
-    return pageShell(toolbar + stateError(state, 'volumes') + '<div class="card table-card">' + body + '</div>');
+    return pageShell(toolbar + stateError(state, 'volumes') + '<div class="card table-card" data-resource-key="table-card">' + body + '</div>');
   },
 };
 function openCreateVolumeDialog() {
@@ -3485,12 +3611,11 @@ async function pruneVolumes() {
 PAGE.networks = {
   enter() { loadNetworks(); if (!(S.containers.items || []).length) loadContainers({ silent: true }); },
   refresh() { loadNetworks({ silent: true }); if (!(S.containers.items || []).length) loadContainers({ silent: true }); },
-  poll() { loadNetworks({ silent: true }); },
   html() {
     const state = S.networks;
     const all = state.items || [];
     const items = all.filter((n) => matchFilter(S.filters.networks, [n.name, n.id, n.driver, n.scope]));
-    const toolbar = '<div class="toolbar">' +
+    const toolbar = '<div class="toolbar" data-resource-key="toolbar">' +
       '<button class="btn primary" type="button" data-act="networks.create">' + icon('plus', 'sm') + esc(t('networks.create')) + '</button>' +
       (showDanger() ? '<button class="btn" type="button" data-act="networks.prune">' + icon('trash', 'sm') + esc(t('networks.prune')) + '</button>' : '') +
       '<div class="search">' + icon('search') + '<input type="search" data-bind="filter" data-key="networks" data-focus-key="filter-networks" value="' + attr(S.filters.networks) + '" placeholder="' + attr(t('networks.search')) + '" aria-label="' + attr(t('networks.search')) + '" /></div>' +
@@ -3503,7 +3628,7 @@ PAGE.networks = {
     else if (state.status === 'error' && !all.length) body = '<div class="table-empty">' + errorBannerHtml(state.error, { scope: 'networks' }) + '</div>';
     else if (!items.length) body = emptyTable({ title: all.length ? t('common.noData') : t('networks.empty.title'), body: all.length ? t('networks.search') : t('networks.empty.body'), cta: all.length ? '' : t('networks.empty.cta'), act: 'networks.create', art: 'share' });
     else {
-      body = '<div class="table-scroll"><table class="table">' + head + '<tbody>' + items.map((n) => '<tr>' +
+      body = '<div class="table-scroll"><table class="table">' + head + '<tbody>' + items.map((n) => '<tr data-resource-key="' + attr(n.id || n.name) + '">' +
         '<td><div class="cell-main">' + icon('share', 'sm') + '<span class="truncate" style="max-width:170px" title="' + attr(n.name) + '">' + esc(n.name) + '</span></div></td>' +
         '<td class="hide-sm mono small">' + esc(n.id || '—') + '</td>' +
         '<td class="hide-sm"><span class="chip">' + esc(n.driver || '—') + '</span></td>' +
@@ -3518,7 +3643,7 @@ PAGE.networks = {
         iconAction('unlink', t('networks.disconnect.title'), 'networks.disconnect', { network: n.name }) +
         iconAction('trash', t('common.delete'), 'networks.remove', { name: n.name }) + '</div></td></tr>').join('') + '</tbody></table></div>';
     }
-    return pageShell(toolbar + stateError(state, 'networks') + '<div class="card table-card">' + body + '</div>');
+    return pageShell(toolbar + stateError(state, 'networks') + '<div class="card table-card" data-resource-key="table-card">' + body + '</div>');
   },
 };
 function openCreateNetworkDialog() {
@@ -3688,7 +3813,7 @@ PAGE.events = {
       '<button class="btn ' + (S.events.active ? '' : 'primary') + '" type="button" data-act="events.toggle">' + (S.events.active ? icon('stop', 'sm') : icon('play', 'sm')) + esc(S.events.active ? t('events.disable') : t('events.enable')) + '</button>' +
       (S.events.active ? '<button class="btn" type="button" data-act="events.pause">' + icon(S.events.paused ? 'play' : 'pause', 'sm') + esc(S.events.paused ? t('events.resume') : t('events.pause')) + '</button>' : '') +
       '<button class="btn ghost" type="button" data-act="events.clear">' + icon('trash', 'sm') + esc(t('events.clear')) + '</button></div>';
-    const filterBar = '<div class="toolbar">' +
+    const filterBar = '<div class="toolbar" data-resource-key="toolbar">' +
       '<div class="search">' + icon('search') + '<input type="search" data-bind="filter" data-key="events" data-focus-key="filter-events" value="' + attr(S.filters.events) + '" placeholder="' + attr(t('events.filter')) + '" aria-label="' + attr(t('events.filter')) + '" /></div>' +
       '<select class="ctl sm" data-change="events.type" aria-label="' + attr(t('events.col.type')) + '">' +
       ['all', 'container', 'image', 'volume', 'network', 'daemon'].map((type) => '<option value="' + type + '"' + (S.filters.eventType === type ? ' selected' : '') + '>' + esc(t('events.type.' + type)) + '</option>').join('') + '</select>' +
@@ -3710,7 +3835,7 @@ PAGE.events = {
           '<td class="hide-sm mono small">' + esc(ev.from || '—') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
     }
-    return pageShell(statusBar + filterBar + (S.events.paused ? '<div class="notice warn mb12" style="margin-bottom:12px">' + icon('pause', 'sm') + '<div>' + esc(t('events.paused')) + '</div></div>' : '') + '<div class="card table-card">' + body + '</div>');
+    return pageShell(statusBar + filterBar + (S.events.paused ? '<div class="notice warn mb12" style="margin-bottom:12px">' + icon('pause', 'sm') + '<div>' + esc(t('events.paused')) + '</div></div>' : '') + '<div class="card table-card" data-resource-key="table-card">' + body + '</div>');
   },
 };
 function openEventDetail(idx) {
@@ -3856,7 +3981,7 @@ async function saveConfigFile(target) {
   const ok = await confirmAction({ title: t('settings.editor.save'), message: t('settings.editor.saveConfirm', { path }), danger: false, confirmLabel: t('settings.editor.save') });
   if (!ok) return;
   try {
-    const res = await invoke('system/config/write', { target: configTargetName(target), content }, { timeoutMs: 30000 });
+    const res = await invoke('system/config/write', { target: configTargetName(target), content, expectedRevision: meta.revision }, { timeoutMs: 30000 });
     markConfigDirty(target, false);
     if (res && res.backupPath) toast('success', t('settings.saved', { path: res.backupPath }));
     else toast('success', t('settings.savedNoBackup'));
@@ -4036,7 +4161,7 @@ async function handleAction(act, el) {
       S.filters = { distros: '', containers: '', images: '', volumes: '', networks: '', events: '', eventType: 'all' };
       S.show.containersStopped = true;
       applyLocale(); applyI18nStatics(); buildNav();
-      persistUi(); setupPolling(); renderPage({ force: true }); syncChrome();
+      persistUi(); setupResourceStream(); renderPage({ force: true }); syncChrome();
       toast('success', t('toast.saved'));
       return;
     }
@@ -4065,7 +4190,7 @@ document.addEventListener('change', (event) => {
     const key = el.dataset.key;
     if (key === 'interval') S.settings.interval = Number(el.value) || 0;
     else if (key === 'lang') S.settings.lang = el.value;
-    applyLocale(); applyI18nStatics(); buildNav(); setupPolling(); persistUiSoon(); syncChrome(); renderPage({ force: true });
+    applyLocale(); applyI18nStatics(); buildNav(); setupResourceStream(); persistUiSoon(); syncChrome(); renderPage({ force: true });
     if (S.route === 'containers' && S.settings.stats) loadStats({ silent: true });
   } else if (kind === 'console.tool') {
     S.console.tool = el.value;
@@ -4086,7 +4211,7 @@ document.addEventListener('input', (event) => {
   } else if (bind === 'filter') {
     S.filters[el.dataset.key] = el.value;
     persistUiSoon();
-    renderPage({ force: true });
+    renderPage();
   } else if (bind === 'console.input') {
     S.console.input = el.value;
   } else if (bind === 'editor') {
@@ -4198,7 +4323,7 @@ async function startApp() {
     pageEnter(S.route);
     renderPage({ force: true, resetScroll: true });
     syncChrome();
-    setupPolling();
+    setupResourceStream();
     setupVisibility();
     window.addEventListener('hashchange', () => {
       const route = routeFromHash();

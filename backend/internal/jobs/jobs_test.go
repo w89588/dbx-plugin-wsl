@@ -126,3 +126,50 @@ func TestJobListOnlyRunningAndLineCap(t *testing.T) {
 		t.Fatalf("byte cap violated: %d bytes", bytes)
 	}
 }
+
+func TestHistoryBoundAndSequences(t *testing.T) {
+	manager := NewManager()
+	running := manager.Start("running", nil, func(ctx context.Context, _ *Job) (any, *apperr.Error) { <-ctx.Done(); return nil, nil })
+	defer manager.Cancel(running.ID())
+	var first *Job
+	for i := 0; i < MaxCompleted+3; i++ {
+		job := manager.Start("quick", nil, func(_ context.Context, j *Job) (any, *apperr.Error) {
+			j.Line("stdout", "one\n")
+			j.Line("stdout", "two\n")
+			return nil, nil
+		})
+		if first == nil {
+			first = job
+		}
+		waitFor(t, job)
+		snapshot, ok := manager.Get(job.ID())
+		if !ok {
+			t.Fatal("new job evicted")
+		}
+		lines := snapshot["lines"].([]Line)
+		if snapshot["sequence"] != uint64(3) || lines[0].Sequence != 1 || lines[1].Sequence != 2 {
+			t.Fatal(snapshot)
+		}
+	}
+	if len(manager.List(true)) != MaxCompleted+1 {
+		t.Fatalf("history cap: %d", len(manager.List(true)))
+	}
+	if _, ok := manager.Get(first.ID()); ok {
+		t.Fatal("oldest completed job not evicted")
+	}
+	if len(manager.List()) != 1 {
+		t.Fatal("running job lost")
+	}
+	manager.mutex.Lock()
+	for _, job := range manager.jobs {
+		job.mutex.Lock()
+		if job.status != StatusRunning {
+			job.finishedAt = time.Now().Add(-Retention - time.Hour)
+		}
+		job.mutex.Unlock()
+	}
+	manager.mutex.Unlock()
+	if len(manager.List(true)) != 1 {
+		t.Fatal("expired history retained")
+	}
+}

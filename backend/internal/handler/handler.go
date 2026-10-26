@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"sync"
 	"time"
 
 	dbxpluginsdk "github.com/t8y2/dbx/plugins/sdk/go/dbx-plugin-sdk"
@@ -21,20 +22,23 @@ const methodNotFound = "METHOD_NOT_FOUND"
 
 // Handler implements dbxpluginsdk.Handler for the WSL Manager plugin.
 type Handler struct {
-	WSL  *wsl.Service
-	WSLC *wslc.Service
-	Jobs *jobs.Manager
-	Ex   execx.Executor
+	WSL       *wsl.Service
+	WSLC      *wslc.Service
+	Jobs      *jobs.Manager
+	Ex        execx.Executor
+	streamsMu sync.Mutex
+	streams   map[string]*resourceStream
 }
 
 // New builds a handler backed by the given process executor.
 func New(executor execx.Executor) *Handler {
 	manager := jobs.NewManager()
 	return &Handler{
-		WSL:  wsl.New(executor, manager),
-		WSLC: wslc.New(executor, manager),
-		Jobs: manager,
-		Ex:   executor,
+		WSL:     wsl.New(executor, manager),
+		WSLC:    wslc.New(executor, manager),
+		Jobs:    manager,
+		Ex:      executor,
+		streams: map[string]*resourceStream{},
 	}
 }
 
@@ -69,6 +73,22 @@ func (h *Handler) dispatch(
 	emitter *dbxpluginsdk.Emitter,
 ) (any, *apperr.Error) {
 	switch method {
+	case "resources/subscribe":
+		return h.subscribeResources(params, emitter)
+	case "resources/unsubscribe":
+		var request struct {
+			ID string `json:"subscriptionId"`
+		}
+		if err := decodeParams(params, &request); err != nil {
+			return nil, err
+		}
+		h.streamsMu.Lock()
+		if stream := h.streams[request.ID]; stream != nil {
+			stream.cancel()
+			delete(h.streams, request.ID)
+		}
+		h.streamsMu.Unlock()
+		return map[string]any{"stopped": true}, nil
 	// ---- system ----
 	case "system/info":
 		return h.WSL.SystemInfo(ctx)
@@ -434,7 +454,11 @@ func (h *Handler) dispatch(
 
 	// ---- jobs ----
 	case "jobs/list":
-		return map[string]any{"jobs": h.Jobs.List()}, nil
+		var request jobListParams
+		if err := decodeParams(params, &request); err != nil {
+			return nil, err
+		}
+		return map[string]any{"jobs": h.Jobs.List(request.IncludeCompleted)}, nil
 	case "jobs/get":
 		return h.jobGet(params)
 	case "jobs/cancel":

@@ -1,6 +1,6 @@
 # AI / MCP 接入
 
-WSL 管理器 0.1.3 通过 DBX 的插件 MCP 桥公开四个工具，覆盖现有全部 **73 个 RPC 接口**。不启动额外端口，不另存连接或凭据，不需要插件 API Key。
+WSL 管理器 0.1.5 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **73 个管理 RPC 接口**（两个资源订阅接口仅供 UI 使用）。不启动额外端口，不另存连接或凭据，不需要插件 API Key。
 
 ## 安装与启用
 
@@ -81,13 +81,13 @@ WSL 管理器 0.1.3 通过 DBX 的插件 MCP 桥公开四个工具，覆盖现�
 
 ## 长任务、失败与授权
 
-拉取/构建镜像、发行版安装/导入导出/版本转换等返回 `jobId`，只表示任务已经创建。用 `wsl_read` 调用 `jobs/get`（`paramsJson` 为 `{"jobId":"返回的ID"}`），检查 `status`、`error`、`result` 和输出，直到 `completed`、`failed` 或 `cancelled`。需要停止时用 `wsl_write` 调用 `jobs/cancel`。任务记录属于当前 sidecar，进程重启后不保留；长任务进行中不要关闭宿主或卸载插件。
+拉取/构建镜像、发行版安装/导入导出/版本转换等返回 `jobId`，只表示任务已经创建。用 `wsl_read` 调用 `jobs/get`（`paramsJson` 为 `{"jobId":"返回的ID"}`），检查 `status`、`error`、`result` 和输出，直到 `completed`、`failed` 或 `cancelled`。需要停止时用 `wsl_write` 调用 `jobs/cancel`。`jobs/list` 默认列出运行中任务；传 `includeCompleted:true` 可查询当前 Sidecar 最近 32 个已结束任务（最长 24 小时），`jobs/get` 返回带序号的输出及权威终态。任务记录属于当前 sidecar，进程重启后不保留；长任务进行中不要关闭宿主或卸载插件。
 
 日志快照允许 `wsl_read`，`follow:true` 会创建后台任务，必须使用 `wsl_write`。事件订阅同样属于写工具，结束后取消任务。命令执行即便只运行 `cat` 也归入写工具，避免任意命令绕过宿主审批。
 
 业务错误返回 `isError:true`，JSON 内容带 `error.code/message/hint/detail`；命令非零退出也标记失败。参数未知字段、错误类型、嵌套桥方法会被拒绝。MCP 不弹出插件 UI 的二次确认框，写操作的确认由宿主/客户端承担；`unregister`、`remove`、`prune` 等会真实删除资源。
 
-保活写入使用 `expectedRevision` 做并发保护。通用 `system/config/write` 会备份配置，但不提供版本冲突检测；保存前先读取当前内容。配置写入不会自动关闭 WSL。
+保活写入使用 `expectedRevision` 做并发保护。通用 `system/config/write` 必须携带 `system/config/read` 中对应文件的 `revision`，字段名为 `expectedRevision`；缺失返回 INVALID_PARAMS，版本冲突返回 CONFLICT，且不覆盖文件。配置写入不会自动关闭 WSL。
 
 注册表密码继续仅从 stdin 交给 `wslc`；插件不会把参数解析失败的原始请求或密码写入错误/日志。**AI 客户端与宿主可能保存工具调用入参**，优先使用插件 UI 登录后再让 AI 拉取镜像。插件不会自动提交日志到外部服务；拉取/构建/注册表登录以及用户执行的命令可以访问网络。
 

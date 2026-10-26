@@ -71,7 +71,7 @@ Dark theme: [overview-dark.png](docs/screenshots/overview-dark.webp).
 | Item | Requirement |
 | --- | --- |
 | OS | Windows 11 with WSL 2 (verified with WSL 3.0.3 and 3.0.4) |
-| DBX | `>= 0.5.68` (verified with 0.6.49) |
+| DBX | `>= 0.6.55` |
 | WSL containers | `wslc` from WSL 3.0+; optional — distribution pages work without it |
 | Build tools | Go 1.22+, Node.js 22+, `@dbx-app/plugin-cli` |
 
@@ -197,3 +197,7 @@ submission checklist.
 ## License
 
 [Apache-2.0](LICENSE). The vendored DBX Go plugin SDK (`backend/sdk/dbx-plugin-sdk`) is Apache-2.0 licensed.
+
+## v0.1.5
+
+Resource changes stream over the existing host event bridge (not HTTP SSE). The UI patches existing rows and fields, preserving focus, scroll and drafts. Hidden views unsubscribe; visible views reconnect with a fresh snapshot. Sampling remains in the backend; unchanged data is not pushed. Configuration writes require the revision returned by `system/config/read`. Completed job history is limited to 32 jobs and 24 hours in the current sidecar; restarting the sidecar clears history.

@@ -130,7 +130,7 @@ func (h *Handler) mcpCall(raw json.RawMessage, emitter *dbxpluginsdk.Emitter) (a
 			"发行版名称、容器 ID 与路径属于运行 DBX 的当前 Windows 用户，不是远程连接。",
 			"长任务返回 jobId；通过 wsl_read jobs/get 读取 status、error、result 和输出，completed 才是成功。任务仅在当前 sidecar 生命周期内有效。",
 			"wslc/containers/logs 的 follow=true 必须使用 wsl_write；日志跟随和事件订阅结束后调用 jobs/cancel。",
-			"system/config/write target 为 wslconfig 或 wslc，会备份但不检测版本冲突；保活设置用 system/wsl/idle/write 并传 expectedRevision。",
+			"system/config/write target 为 wslconfig 或 wslc，须先读取并传入 expectedRevision，备份且检测版本冲突；保活设置用 system/wsl/idle/write 并传 expectedRevision。",
 			"exec 和 console/run 可以执行任意命令与文件读写，始终归入写工具；先取得用户对具体操作的授权。",
 		}}, nil), nil
 	case "wsl_read", "wsl_write":

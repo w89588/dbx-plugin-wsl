@@ -5,6 +5,7 @@ package jobs
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -17,7 +18,9 @@ const (
 	// MaxLines is the number of output lines kept for jobs/get compensation.
 	MaxLines = 2000
 	// MaxBytes is the byte budget of the retained output.
-	MaxBytes = 512 * 1024
+	MaxBytes     = 512 * 1024
+	MaxCompleted = 32
+	Retention    = 24 * time.Hour
 )
 
 // Status is a job lifecycle state.
@@ -32,9 +35,10 @@ const (
 
 // Line is one buffered output line.
 type Line struct {
-	Stream string `json:"stream"`
-	Text   string `json:"text"`
-	TS     int64  `json:"ts"`
+	Stream   string `json:"stream"`
+	Text     string `json:"text"`
+	TS       int64  `json:"ts"`
+	Sequence uint64 `json:"sequence"`
 }
 
 // Task is the body of a job. It must return the job result and a structured
@@ -67,6 +71,7 @@ type Job struct {
 	mutex      sync.Mutex
 	lines      []Line
 	lineBytes  int
+	sequence   uint64
 	status     Status
 	exitCode   int
 	failure    *apperr.Error
@@ -77,6 +82,7 @@ type Job struct {
 // Start registers and launches a job, returning immediately.
 func (m *Manager) Start(method string, emitter *dbxpluginsdk.Emitter, task Task) *Job {
 	m.mutex.Lock()
+	m.pruneLocked()
 	m.seq++
 	job := &Job{
 		manager:   m,
@@ -97,13 +103,7 @@ func (m *Manager) Start(method string, emitter *dbxpluginsdk.Emitter, task Task)
 }
 
 func (j *Job) run(ctx context.Context, task Task) {
-	// The JSON-RPC response carrying {jobId} is written right after the handler
-	// returns. Yield briefly so the very first job event can never overtake it
-	// on the wire: UI awaits invoke() to learn the jobId, then follows events.
-	select {
-	case <-time.After(10 * time.Millisecond):
-	case <-ctx.Done():
-	}
+	// Events may precede the response; clients reconcile by snapshot and sequence.
 	var result any
 	var failure *apperr.Error
 	func() {
@@ -136,6 +136,9 @@ func (j *Job) finish(ctx context.Context, result any, failure *apperr.Error) {
 		j.status = StatusCompleted
 	}
 	exitCode := j.exitCode
+	status := j.status
+	j.sequence++
+	sequence := j.sequence
 	j.mutex.Unlock()
 
 	errorPayload := any(nil)
@@ -148,13 +151,18 @@ func (j *Job) finish(ctx context.Context, result any, failure *apperr.Error) {
 	}
 	j.emit("job/end", map[string]any{
 		"jobId":      j.id,
-		"ok":         exitCode == 0 && failure == nil,
+		"ok":         status == StatusCompleted,
+		"status":     string(status),
+		"sequence":   sequence,
 		"exitCode":   exitCode,
 		"error":      errorPayload,
 		"result":     result,
 		"durationMs": j.durationMs(),
 	})
 	close(j.done)
+	j.manager.mutex.Lock()
+	j.manager.pruneLocked()
+	j.manager.mutex.Unlock()
 }
 
 // ID returns the job identifier (job-N).
@@ -185,7 +193,9 @@ func (j *Job) ExitCode() int {
 func (j *Job) Line(stream, text string) {
 	timestamp := j.manager.now().UnixMilli()
 	j.mutex.Lock()
-	j.lines = append(j.lines, Line{Stream: stream, Text: text, TS: timestamp})
+	j.sequence++
+	sequence := j.sequence
+	j.lines = append(j.lines, Line{Stream: stream, Text: text, TS: timestamp, Sequence: sequence})
 	j.lineBytes += len(text)
 	for len(j.lines) > MaxLines || j.lineBytes > MaxBytes {
 		if len(j.lines) == 0 {
@@ -196,10 +206,11 @@ func (j *Job) Line(stream, text string) {
 	}
 	j.mutex.Unlock()
 	j.emit("job/output", map[string]any{
-		"jobId":  j.id,
-		"stream": stream,
-		"text":   text,
-		"ts":     timestamp,
+		"jobId":    j.id,
+		"stream":   stream,
+		"text":     text,
+		"ts":       timestamp,
+		"sequence": sequence,
 	})
 }
 
@@ -236,6 +247,7 @@ func (j *Job) Snapshot() map[string]any {
 	exitCode := j.exitCode
 	failure := j.failure
 	result := j.result
+	sequence := j.sequence
 	j.mutex.Unlock()
 
 	errorPayload := any(nil)
@@ -256,12 +268,14 @@ func (j *Job) Snapshot() map[string]any {
 		"error":      errorPayload,
 		"result":     result,
 		"lines":      lines,
+		"sequence":   sequence,
 	}
 }
 
 // Get returns a job snapshot by id.
 func (m *Manager) Get(id string) (map[string]any, bool) {
 	m.mutex.Lock()
+	m.pruneLocked()
 	job, ok := m.jobs[id]
 	m.mutex.Unlock()
 	if !ok {
@@ -271,8 +285,9 @@ func (m *Manager) Get(id string) (map[string]any, bool) {
 }
 
 // List returns the currently running jobs.
-func (m *Manager) List() []map[string]any {
+func (m *Manager) List(includeCompleted ...bool) []map[string]any {
 	m.mutex.Lock()
+	m.pruneLocked()
 	snapshot := make([]*Job, 0, len(m.jobs))
 	for _, job := range m.jobs {
 		snapshot = append(snapshot, job)
@@ -284,7 +299,7 @@ func (m *Manager) List() []map[string]any {
 		running := job.status == StatusRunning
 		startedAt := job.startedAt
 		job.mutex.Unlock()
-		if !running {
+		if !running && (len(includeCompleted) == 0 || !includeCompleted[0]) {
 			continue
 		}
 		rows = append(rows, map[string]any{
@@ -293,6 +308,7 @@ func (m *Manager) List() []map[string]any {
 			"startedAt": startedAt.UnixMilli(),
 		})
 	}
+	sort.Slice(rows, func(i, j int) bool { return rows[i]["startedAt"].(int64) < rows[j]["startedAt"].(int64) })
 	return rows
 }
 
@@ -300,14 +316,15 @@ func (m *Manager) List() []map[string]any {
 // a cancellation was actually delivered.
 func (m *Manager) Cancel(id string) (bool, bool) {
 	m.mutex.Lock()
+	m.pruneLocked()
 	job, ok := m.jobs[id]
 	m.mutex.Unlock()
 	if !ok {
 		return false, false
 	}
 	job.mutex.Lock()
+	defer job.mutex.Unlock()
 	running := job.status == StatusRunning
-	job.mutex.Unlock()
 	if !running {
 		return true, false
 	}
@@ -317,3 +334,30 @@ func (m *Manager) Cancel(id string) (bool, bool) {
 
 // Now returns the manager clock (used by services for timestamps).
 func (m *Manager) Now() time.Time { return m.now() }
+
+// Caller holds manager mutex. Running jobs are never evicted.
+func (m *Manager) pruneLocked() {
+	type entry struct {
+		id string
+		at time.Time
+	}
+	completed := []entry{}
+	for id, job := range m.jobs {
+		job.mutex.Lock()
+		status, at := job.status, job.finishedAt
+		job.mutex.Unlock()
+		if status == StatusRunning {
+			continue
+		}
+		if m.now().Sub(at) > Retention {
+			delete(m.jobs, id)
+			continue
+		}
+		completed = append(completed, entry{id, at})
+	}
+	sort.Slice(completed, func(i, j int) bool { return completed[i].at.Before(completed[j].at) })
+	for len(completed) > MaxCompleted {
+		delete(m.jobs, completed[0].id)
+		completed = completed[1:]
+	}
+}
