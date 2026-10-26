@@ -1,6 +1,7 @@
 package wsl
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -39,6 +40,9 @@ func readIdleDocument() (idleDocument, *apperr.Error) {
 	}
 	doc.exists = err == nil
 	doc.content = execx.DecodeText(raw)
+	if bytes.HasPrefix(raw, []byte{0xef, 0xbb, 0xbf}) {
+		doc.content = "\ufeff" + doc.content
+	}
 	// Include existence so deleting/creating an empty file also changes revision.
 	hash := sha256.Sum256(append([]byte(strconv.FormatBool(doc.exists)+":"), raw...))
 	doc.revision = hex.EncodeToString(hash[:])

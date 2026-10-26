@@ -74,6 +74,27 @@ func (h *Handler) dispatch(
 	emitter *dbxpluginsdk.Emitter,
 ) (any, *apperr.Error) {
 	switch method {
+	case "diagnostics/run":
+		var p diagnosticParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.diagnostics(ctx, p)
+	case "system/resources/read":
+		return h.WSL.ResourceConfigRead()
+	case "system/resources/preview":
+		var p wsl.ResourceConfigParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSL.ResourceConfigPreview(p)
+	case "system/resources/apply":
+		var p wsl.ResourceConfigParams
+		if e := decodeParams(params, &p); e != nil {
+			return nil, e
+		}
+		return h.WSL.ResourceConfigApply(ctx, p)
+
 	case "system/folder/select":
 		path, err := winenv.SelectFolder()
 		if err != nil {

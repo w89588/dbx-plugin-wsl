@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.2.0`
+- 版本：`0.3.0`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.2.0"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.3.0"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -750,7 +750,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `mcp/call`：参数 `{tool, arguments, lifecycle?}`，兼容 DBX 插件桥。工作台仅操作当前 Windows 用户的本机资源，忽略连接 lifecycle，不接受远程目标。
 - `wsl_connections`：无参数，复用 `wsl/distros/list`；不会把 WSLC 容器误认为 WSL 发行版。
 - `wsl_describe`：可选 `method`，列举或获取方法类型 Schema；语义必填与取值范围由原有服务校验。
-- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 77 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
+- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 81 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
 - 查询工具只允许明确声明的查询方法；exec、配置、删除、后台事件、取消均需写工具。日志 `follow:true` 也需写工具。
 - 返回标准 `{content:[{type:"text",text:"JSON"}],isError,resultType:"complete"}`，业务失败保留 code/message/hint/detail；非零命令退出码标记 `isError:true`。
 - 长任务返回 jobId 后，通过同一 sidecar 的 `jobs/get` 查询最终状态和输出；返回 jobId 不代表执行成功。Sidecar 重启后原任务不可查询。
@@ -759,7 +759,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 接入、宿主兼容限制与示例见 [MCP 指南](mcp.md)。
 
 
-## 11. v0.2.0 资源流与可靠性
+## 11. v0.1.5 资源流与可靠性
 
 传输沿用 `stdio-jsonl → dbxPlugin.onEvent`，不是 HTTP SSE，不新增端口、权限或 MCP 工具。
 
@@ -780,3 +780,11 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 - `backups/verify`：`{id}`，长任务重新校验大小与 SHA-256。
 - `backups/restore`：`{id,name,location}`，长任务校验后导入 WSL 2 并验证启动。名称不可与源相同或已存在，目录须不存在。失败保留目标供检查，不自动卸载。
 - `system/folder/select`：无参数，调用 Windows 文件夹选择器，返回 `{path}`，取消时 path 为空。仅 UI 使用，不暴露给 MCP；Sidecar 会调用固定 PowerShell/Windows Forms 脚本。
+
+
+## 13. 诊断与配置助手（0.3.0）
+
+- `diagnostics/run`：`{registry?:主机名或主机:端口,ports?:整数数组}`。最多 16 个回环端口；可选 HTTPS GET /v2/ 不发送凭据、不跟随重定向。返回脱敏 checks（id/status/evidence/action/checkedAt）、scope、redacted。端口检查短暂绑定后释放，不预留端口，不报告进程归属。
+- `system/resources/read`：返回当前内容、revision、values 和 maxProcessors。
+- `system/resources/preview`：`{expectedRevision,memoryMB?,processors?,swapMB?}`。空缺字段移除对应覆盖项；内存 256–1048576 MiB，swap 0–1048576 MiB，CPU 1–本机逻辑核数。返回 before/after/changed/restartRequired；不写文件。
+- `system/resources/apply`：参数同预览，重新校验修订号后保存并备份；返回 appliedToRunningInstances:false，不自动关闭 WSL。

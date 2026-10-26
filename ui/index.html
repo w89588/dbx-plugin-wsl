@@ -763,18 +763,19 @@ tr:hover .row-actions, tr:focus-within .row-actions{ opacity:1; }
    0. Constants
    ============================================================ */
 const HOST = window.dbxPlugin;
-const APP_VERSION = '0.2.0';
+const APP_VERSION = '0.3.0';
 const PROJECT_URL = 'https://github.com/w89588/dbx-plugin-wsl';
 const JOB_LINE_LIMIT = 2000;
 const JOB_BYTE_LIMIT = 512 * 1024;
 const EVENT_LIMIT = 500;
-const ROUTES = ['dashboard','distros','backups','containers','images','volumes','networks','console','events','settings'];
+const ROUTES = ['dashboard','distros','backups','containers','images','volumes','networks','console','events','diagnostics','resources','settings'];
 
 /* ============================================================
    1. i18n dictionary — every visible string goes through t()
    ============================================================ */
 const DICT = {
   en: {
+    'diagnostics.title':'Diagnostics','diagnostics.sub':'Evidence, timestamps and next steps','resources.title':'Resource settings','resources.sub':'Preview memory, CPU and swap changes before saving',
     'backups.title':'Backups & restore','backups.sub':'Verified archives, restore as a new distribution',
     'project.title':'Source & feedback','project.repo':'GitHub repository','project.issues':'Issues & feedback','project.bug':'Report a bug','project.feature':'Suggest a feature','project.guide':'Search existing Issues first. For bugs, include plugin / DBX / WSL versions, reproduction steps, expected and actual results, and redacted logs. For suggestions, explain your use case. Never include passwords or tokens.',
     'idle.title':'Idle shutdown & keep-alive','idle.intro':'Keep distributions running after you close the terminal. WSL has separate idle timers: distributions default to 15 seconds; the WSL 2 VM defaults to 60 seconds after all distributions stop. This is idle shutdown, not Windows sleep.',
@@ -842,6 +843,7 @@ const DICT = {
     'misc.unitB':'B','misc.unitKB':'KB','misc.unitMB':'MB','misc.unitGB':'GB','misc.unitTB':'TB','misc.yes':'Yes','misc.no':'No','misc.refreshing':'Refreshing…','misc.filtered':'{shown} of {total}','misc.runningCount':'{n} running','misc.ofTotal':'of {total}'
   },
   zh: {
+    'diagnostics.title':'诊断中心','diagnostics.sub':'检查依据、时间与处理建议','resources.title':'资源配置助手','resources.sub':'内存、CPU 与交换空间，预览后保存',
     'backups.title':'备份与恢复','backups.sub':'备份校验、恢复与克隆，保留原发行版',
     'project.title':'源码与反馈','project.repo':'GitHub 仓库','project.issues':'Issues 与反馈','project.bug':'报告功能 BUG','project.feature':'提出功能建议','project.guide':'请先搜索已有 Issue。报告 BUG 时请附插件 / DBX / WSL 版本、复现步骤、预期与实际结果以及脱敏日志；建议请说明使用场景。请勿提交密码或令牌。',
     'idle.title':'空闲退出与保活','idle.intro':'关闭终端后仍让发行版保持运行。WSL 有两个空闲计时器：发行版默认 15 秒；所有发行版停止后，WSL 2 虚拟机默认等待 60 秒退出。这是空闲退出，不是 Windows 系统休眠。',
@@ -2072,6 +2074,8 @@ function hasWslc() { const info = S.system.info; return !!(info && info.wslc && 
    12. Routing, navigation and chrome
    ============================================================ */
 const NAV_META = {
+  diagnostics:{icon:'activity',title:'diagnostics.title',sub:'diagnostics.sub'},
+  resources:{icon:'sliders',title:'resources.title',sub:'resources.sub'},
   backups: {icon:'download',title:'backups.title',sub:'backups.sub'},
   dashboard: { icon: 'grid', title: 'dash.title', sub: 'dash.sub' },
   distros: { icon: 'layers', title: 'distros.title', sub: 'distros.sub' },
@@ -2098,9 +2102,9 @@ function buildNav() {
       icon(meta.icon) + '<span class="nav-text">' + esc(t(meta.title)) + '</span>' + (count ? '<span class="nav-count">' + count + '</span>' : '') + '</button>';
   };
   nav.innerHTML = '<div class="nav-label">' + esc(t('nav.section.manage')) + '</div>' +
-    ['dashboard', 'distros', 'containers', 'images', 'volumes', 'networks'].map(item).join('') +
+    ['dashboard', 'distros', 'backups', 'containers', 'images', 'volumes', 'networks'].map(item).join('') +
     '<div class="nav-label">' + esc(t('nav.section.system')) + '</div>' +
-    ['console', 'events', 'settings'].map(item).join('');
+    ['console', 'events', 'diagnostics', 'resources', 'settings'].map(item).join('');
 }
 function syncNav() {
   $$('#nav .nav-item').forEach((el) => el.classList.toggle('active', el.dataset.route === S.route));
@@ -3999,6 +4003,12 @@ async function saveConfigFile(target) {
 async function handleAction(act, el) {
   const data = el.dataset;
   switch (act) {
+    case 'diagnostics.run': await runDiagnostics(); return;
+    case 'diagnostics.copy': if(diagnosticView.report) await copyText(JSON.stringify(diagnosticView.report,null,2)); return;
+    case 'resources.read': await readResourceConfig(true); return;
+    case 'resources.preview': await previewResourceConfig(); return;
+    case 'resources.apply': await applyResourceConfig(); return;
+
     case 'backups.create': openBackupCreate(); return;
     case 'backups.restore': openBackupRestore(data.id); return;
     case 'backups.verify': await startJob('backups/verify',{id:data.id}); return;
@@ -4215,7 +4225,8 @@ document.addEventListener('input', (event) => {
   const el = event.target.closest('[data-bind]');
   if (!el) return;
   const bind = el.dataset.bind;
-  if (bind === 'idle.value') {
+  if (bind === 'workflow') { const view=el.dataset.view==='diagnostics'?diagnosticView:resourceConfigView;view.draft[el.dataset.key]=el.value;if(el.dataset.view==='resources'){view.dirty=true;view.preview=null;const button=document.querySelector('[data-act="resources.apply"]');if(button)button.disabled=true;}
+  } else if (bind === 'idle.value') {
     S.idle[el.dataset.key] = el.value;
   } else if (bind === 'filter') {
     S.filters[el.dataset.key] = el.value;
@@ -4315,6 +4326,18 @@ function folderField(name,label,value){return workflowField(name,label,value)+'<
 PAGE.backups={enter(){loadBackups();loadDistros({silent:true});},refresh:loadBackups,html(){return pageShell('<div class="toolbar" data-resource-key="toolbar"><button class="btn primary" data-act="backups.create">'+esc(wText('创建备份','Create backup'))+'</button><span class="grow"></span><button class="btn" data-act="page.refresh">'+esc(t('common.refresh'))+'</button></div><div class="notice info">'+esc(wText('备份使用 SHA-256 校验。恢复必须使用新名称和新目录，不覆盖原发行版。运行中的数据库请先完成应用自身备份。','Backups use SHA-256 verification. Restore uses a new name and folder, preserving the source. Back up running databases at application level first.'))+'</div>'+ (backupView.error?errorBannerHtml(backupView.error):'')+'<div class="card mt16"><div class="table-scroll"><table class="table"><thead><tr><th>'+esc(wText('发行版 / 时间','Distribution / time'))+'</th><th>'+esc(wText('状态 / 大小','Status / size'))+'</th><th>'+esc(wText('备份文件','Archive'))+'</th><th>'+esc(wText('操作','Actions'))+'</th></tr></thead><tbody>'+backupView.items.map(r=>'<tr data-resource-key="'+attr(r.id)+'"><td>'+esc(r.name)+'<div class="cell-sub">'+esc(new Date(r.createdAt).toLocaleString())+'</div></td><td>'+esc(r.status)+'<div class="cell-sub">'+esc(fmtBytes(r.bytes))+' · '+esc(r.stage)+'</div></td><td><span class="path-text" title="'+attr(r.path)+'">'+esc(r.path)+'</span><div class="cell-sub">'+esc(r.message||'')+'</div></td><td><div class="row-actions"><button class="btn xs" data-act="backups.verify" data-id="'+attr(r.id)+'" '+(r.status==='completed'?'':'disabled')+'>'+esc(wText('校验','Verify'))+'</button><button class="btn xs" data-act="backups.restore" data-id="'+attr(r.id)+'" '+(r.status==='completed'?'':'disabled')+'>'+esc(wText('恢复 / 克隆','Restore / clone'))+'</button></div></td></tr>').join('')+'</tbody></table></div>'+(!backupView.items.length?'<div class="card-body muted">'+esc(wText('暂无备份。创建第一份备份后，可在这里校验和恢复。','No backups yet. Create an archive to verify and restore it here.'))+'</div>':'')+'</div>');}};
 function openBackupCreate(){showDialog({title:wText('创建发行版备份','Back up a distribution'),body:'<div class="field"><label>'+esc(wText('发行版','Distribution'))+'</label><select class="ctl" name="name">'+S.distros.items.map(d=>'<option value="'+attr(d.name)+'">'+esc(d.name)+'</option>').join('')+'</select></div>'+folderField('directory',wText('备份目录','Backup directory'),backupView.directory)+'<label class="check mt16"><input type="checkbox" name="stopBeforeBackup">'+esc(wText('若正在运行，先停止该发行版（会中断其中的服务）','Stop this distribution first if running (interrupts its services)'))+'</label>',onSubmit:async v=>{try{await startJob('backups/create',{name:v.name,directory:v.directory,stopBeforeBackup:!!v.stopBeforeBackup});closeDialog('started');loadBackups();}catch(e){setDialogError(e);}return false;}});}
 function openBackupRestore(id){const r=backupView.items.find(r=>r.id===id);if(!r)return;showDialog({title:wText('恢复为新发行版','Restore as a new distribution'),body:'<div class="notice info">'+esc(wText('先校验文件，再导入并验证启动。失败时保留新发行版和文件供检查；不会删除原发行版。','Verify, import, then test startup. Failures preserve the new distribution and files for inspection. The source is never deleted.'))+'</div>'+workflowField('name',wText('新发行版名称','New distribution name'),r.name+'-restored')+workflowField('location',wText('新安装目录（必须尚不存在）','New install folder (must not exist)'),''),onSubmit:async v=>{try{await startJob('backups/restore',{id,name:v.name,location:v.location});closeDialog('started');}catch(e){setDialogError(e);}return false;}});}
+
+const diagnosticView={draft:{registry:'',ports:'5432,6379'},report:null,error:null,busy:false};
+const resourceConfigView={draft:{memoryMB:'',processors:'',swapMB:''},snapshot:null,preview:null,dirty:false,error:null,busy:false};
+function workflowInput(view,key,label,type='text'){const state=view==='diagnostics'?diagnosticView:resourceConfigView;return '<div class="field"><label>'+esc(label)+'</label><input class="ctl" type="'+type+'" data-bind="workflow" data-view="'+view+'" data-key="'+key+'" data-focus-key="'+view+'-'+key+'" value="'+attr(state.draft[key])+'" /></div>';}
+async function runDiagnostics(){if(diagnosticView.busy)return;diagnosticView.busy=true;diagnosticView.error=null;requestRender();try{const ports=diagnosticView.draft.ports.split(/[,，\s]+/).filter(Boolean).map(Number);diagnosticView.report=await invoke('diagnostics/run',{registry:diagnosticView.draft.registry.trim(),ports},{timeoutMs:60000});}catch(e){diagnosticView.error=e;}finally{diagnosticView.busy=false;requestRender();}}
+PAGE.diagnostics={enter(){},refresh:runDiagnostics,html(){const v=diagnosticView;return pageShell('<div class="card"><div class="card-body"><div class="form-grid">'+workflowInput('diagnostics','registry',wText('注册表主机（可选，不发送凭据）','Registry host (optional, no credentials sent)'))+workflowInput('diagnostics','ports',wText('回环端口（逗号分隔）','Loopback ports (comma separated)'))+'</div><div class="row mt16"><button class="btn primary" data-act="diagnostics.run" '+(v.busy?'disabled':'')+'>'+esc(v.busy?wText('检查中…','Checking…'):wText('开始诊断','Run diagnostics'))+'</button><button class="btn" data-act="diagnostics.copy" '+(!v.report?'disabled':'')+'>'+esc(wText('复制脱敏报告','Copy redacted report'))+'</button></div></div></div>'+ (v.error?errorBannerHtml(v.error):'')+(v.report?'<div class="card mt16"><div class="card-body"><p class="small muted">'+esc(v.report.scope)+'</p>'+v.report.checks.map(c=>'<div class="dl-row"><dt>'+esc(c.id)+'<div class="cell-sub">'+esc(new Date(c.checkedAt).toLocaleTimeString())+'</div></dt><dd><span class="badge '+(c.status==='ok'?'run':'warn')+'">'+esc(c.status)+'</span><p>'+esc(c.evidence)+'</p><p class="small muted">'+esc(c.action)+'</p></dd></div>').join('')+'</div></div>':'<p class="muted mt16">'+esc(wText('检查不会自动修复或关闭 WSL。报告省略用户名、本地路径、凭据和原始错误输出。','Checks do not repair or shut down WSL. Reports omit usernames, local paths, credentials and raw errors.'))+'</p>'));}};
+function sizeInMB(text){const m=String(text||'').match(/^(\d+)\s*(MB|GB)?$/i);return m?String(Number(m[1])*(String(m[2]).toUpperCase()==='GB'?1024:1)):'';}
+async function readResourceConfig(confirmDraft=false){if(confirmDraft&&resourceConfigView.dirty&&!await confirmAction({title:wText('重新读取','Reload'),message:wText('放弃未保存的资源配置草稿？','Discard unsaved resource settings?'),danger:false}))return;try{const r=await invoke('system/resources/read');Object.assign(resourceConfigView,{snapshot:r,draft:{memoryMB:sizeInMB(r.values.memory),processors:r.values.processors||'',swapMB:sizeInMB(r.values.swap)},dirty:false,preview:null,error:null});}catch(e){resourceConfigView.error=e;}requestRender();}
+function resourceConfigParams(){const v=resourceConfigView;const p={expectedRevision:v.snapshot.revision};for(const key of ['memoryMB','processors','swapMB'])if(v.draft[key].trim()!=='')p[key]=Number(v.draft[key]);return p;}
+async function previewResourceConfig(){try{resourceConfigView.preview=await invoke('system/resources/preview',resourceConfigParams());resourceConfigView.error=null;}catch(e){resourceConfigView.error=e;}requestRender();}
+async function applyResourceConfig(){const v=resourceConfigView;if(!v.preview||v.busy)return;if(!await confirmAction({title:wText('保存资源配置','Save resource settings'),message:wText('影响当前用户的全部 WSL 2 发行版。仅保存配置，不会自动重启；需另行关闭 WSL 后生效。','Affects all WSL 2 distributions for this user. Saves only; a separate WSL shutdown is required.'),danger:false}))return;v.busy=true;try{await invoke('system/resources/apply',resourceConfigParams());toast('success',wText('已保存，重启 WSL 后生效','Saved; restart WSL to apply'));await readResourceConfig();}catch(e){v.error=e;}finally{v.busy=false;requestRender();}}
+PAGE.resources={enter(){if(!resourceConfigView.snapshot)readResourceConfig();},refresh(){readResourceConfig(true);},html(){const v=resourceConfigView;return pageShell('<div class="card"><div class="card-body"><p class="notice info">'+esc(wText('留空恢复 WSL 默认值。交换空间填 0 可禁用。预览仅修改这三个设置，保留其他内容与注释；保存不会自动重启。','Blank fields restore WSL defaults; swap 0 disables swap. Only these three settings change; other content and comments are retained. Saving never restarts WSL.'))+'</p><div class="form-grid mt16">'+workflowInput('resources','memoryMB',wText('内存上限（MiB）','Memory limit (MiB)'),'number')+workflowInput('resources','processors',wText('CPU 数量','CPU count'),'number')+workflowInput('resources','swapMB',wText('交换空间（MiB）','Swap (MiB)'),'number')+'</div><div class="row mt16"><button class="btn" data-act="resources.read">'+esc(wText('重新读取','Reload'))+'</button><button class="btn primary" data-act="resources.preview" '+(!v.snapshot?'disabled':'')+'>'+esc(wText('预览修改','Preview changes'))+'</button><button class="btn" data-act="resources.apply" '+(!v.preview||!v.preview.changed||v.busy?'disabled':'')+'>'+esc(wText('保存配置','Save changes'))+'</button></div></div></div>'+(v.error?errorBannerHtml(v.error):'')+(v.preview?'<div class="split mt16"><div class="card"><div class="card-body"><h3>'+esc(wText('保存前','Before'))+'</h3><pre class="code-block">'+esc(v.preview.before)+'</pre></div></div><div class="card"><div class="card-body"><h3>'+esc(wText('保存后','After'))+'</h3><pre class="code-block">'+esc(v.preview.after)+'</pre></div></div></div>':''));}};
 async function startApp() {
   applyTheme();
   if (!HOST || typeof HOST.invoke !== 'function') { showUnsupported(); return; }

@@ -41,6 +41,9 @@ window.dbxPlugin = {
     if(method==='system/config/read') return {wslconfig:{path:'C:\\test\\.wslconfig',exists:true,content:window.__config},wslcSettings:{exists:false,content:''}};
     if(method==='wsl/distros/list') return {distros:[{name:'Debian',state:'Stopped',version:2}],count:1};
     if(method==='backups/list') return {backups:[{id:'a'.repeat(32),name:'Debian',path:'C:/backups/distribution.tar',status:'completed',stage:'completed',bytes:1024,createdAt:Date.now()}],defaultDirectory:'C:/backups'};
+    if(method==='system/resources/read') return {revision:'resources-r1',content:'[wsl2]\\nmemory=4GB',values:{memory:'4GB',processors:'2',swap:'0MB'},maxProcessors:8};
+    if(method==='system/resources/preview') return {before:'[wsl2]\\nmemory=4GB',after:'[wsl2]\\nmemory=8192MB',changed:true,revision:'resources-r1'};
+    if(method==='diagnostics/run') return {scope:'redacted test report',checks:[{id:'wsl',status:'ok',evidence:'Tool available',action:'',checkedAt:Date.now()}],redacted:true};
     if(method==='jobs/list') return {jobs:[]};
     if(method==='jobs/get') return window.__jobSnapshot || {};
     if(method==='test/fastJob') {window.__hostEvent({method:'job/end',params:{jobId:'fast-job',status:'cancelled',ok:false,sequence:1,exitCode:0}});return {jobId:'fast-job'};}
@@ -188,7 +191,7 @@ try {
   await evaluate(`S.settings.interval=0;setupResourceStream()`);
   assert(await evaluate(`resourceFeed.id===''`),'live updates off did not stop subscription');
   console.log('PASS: streaming resource updates preserve page/table/row identity, scroll, focus, selection and dialog drafts; no frontend polling; stats updates, early task completion, subscription cleanup, stale-event rejection, sequence recovery, hidden pause and automatic reconnection.');
-  await evaluate(`navigate('backups')`);
+  await click('#nav [data-route="backups"]');
   await wait(`document.querySelector('[data-act="backups.restore"]')`);
   await click('[data-act="backups.create"]');
   await wait(`document.querySelector('#dialog-root [name="stopBeforeBackup"]')`);
@@ -199,6 +202,18 @@ try {
   assert(await evaluate(`document.querySelector('#dialog-root [name="name"]').value==='Debian-restored'`));
   await click('[data-act="dialog.cancel"]');
   console.log('PASS: backup list, create options, new-name restore form and original-preservation disclosure.');
+  await click('#nav [data-route="resources"]');
+  await wait(`document.querySelector('[data-view="resources"][data-key="memoryMB"]')?.value==='4096'`);
+  await evaluate(`const input=document.querySelector('[data-view="resources"][data-key="memoryMB"]');input.value='8192';input.dispatchEvent(new Event('input',{bubbles:true}))`);
+  await click('[data-act="resources.preview"]');
+  await wait(`document.querySelector('[data-act="resources.apply"]')?.disabled===false`);
+  assert(await evaluate(`document.querySelector('#page').innerText.includes('memory=8192MB')`));
+  await delay(250);writeFileSync(join(shots,'resource-config.png'),Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+  await click('#nav [data-route="diagnostics"]');
+  await click('[data-act="diagnostics.run"]');
+  await wait(`document.querySelector('#page').innerText.includes('Tool available')`);
+  await delay(250);writeFileSync(join(shots,'diagnostics.png'),Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+  console.log('PASS: resource configuration reads current values, previews changes and enables save only after preview; diagnostic report renders evidence.');
   assert.equal(errors.length,0,JSON.stringify(errors));
   console.log('PASS: keep-alive save, restart disclosure, cancel shutdown, input validation, draft protection, source/Issue link dispatch, navigation, Chinese/English, light/dark/narrow layout.');
   await call('Browser.close').catch(()=>{});

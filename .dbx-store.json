@@ -17,5 +17,5 @@
   "source": "https://github.com/w89588/dbx-plugin-wsl",
   "homepage": "https://github.com/w89588/dbx-plugin-wsl",
   "license": "Apache-2.0",
-  "releaseNotes": "v0.2.0：备份恢复中心、持久记录、SHA-256 校验、新名称恢复与启动验证。"
+  "releaseNotes": "v0.3.0：诊断中心、脱敏报告、资源配置助手、差异预览及冲突保护。"
 }
