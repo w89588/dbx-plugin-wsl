@@ -206,3 +206,5 @@ Resource changes stream over the existing host event bridge (not HTTP SSE). The 
 ## Consolidated v0.1.6
 
 Backup/restore, diagnostics, resource configuration, task consistency and compatibility fixes are consolidated into v0.1.6. The development template page, navigation and creation dialogs have been removed. Backend template RPC/MCP methods remain available; existing containers, volumes and records are preserved.
+
+As of v0.1.7, `diagnostics/run` requires `wsl_write` authorization because it can probe registry hosts and local ports. `wsl_read` rejects it for every parameter combination, including an empty request. Manual diagnostics in the workbench remain available.

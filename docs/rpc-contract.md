@@ -3,7 +3,7 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.1.6`
+- 版本：`0.1.7`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
 - Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.6"`
 - 日志只能写 stderr；stdout 只能输出协议消息
@@ -784,7 +784,7 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 
 ## 13. 诊断与配置助手（0.1.6）
 
-- `diagnostics/run`：`{registry?:主机名或主机:端口,ports?:整数数组}`。最多 16 个回环端口；可选 HTTPS GET /v2/ 不发送凭据、不跟随重定向。返回脱敏 checks（id/status/evidence/action/checkedAt）、scope、redacted。端口检查短暂绑定后释放，不预留端口，不报告进程归属。
+- `diagnostics/run`（MCP 非只读，必须使用 `wsl_write` 并取得诊断目标授权；包括空参数情况）：`{registry?:主机名或主机:端口,ports?:整数数组}`。最多 16 个回环端口；可选 HTTPS GET /v2/ 不发送凭据、不跟随重定向。返回脱敏 checks（id/status/evidence/action/checkedAt）、scope、redacted。端口检查短暂绑定后释放，不预留端口，不报告进程归属。
 - `system/resources/read`：返回当前内容、revision、values 和 maxProcessors。
 - `system/resources/preview`：`{expectedRevision,memoryMB?,processors?,swapMB?}`。空缺字段移除对应覆盖项；内存 256–1048576 MiB，swap 0–1048576 MiB，CPU 1–本机逻辑核数。返回 before/after/changed/restartRequired；不写文件。
 - `system/resources/apply`：参数同预览，重新校验修订号后保存并备份；返回 appliedToRunningInstances:false，不自动关闭 WSL。

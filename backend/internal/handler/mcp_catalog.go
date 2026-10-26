@@ -26,7 +26,7 @@ var mcpMethods = []mcpMethod{
 	{"templates/plan", true, wslc.TemplatePlanParams{}},
 	{"templates/status", true, wslc.TemplateStatusParams{}},
 	{"templates/create", false, wslc.TemplateCreateParams{}},
-	{"diagnostics/run", true, diagnosticParams{}},
+	{"diagnostics/run", false, diagnosticParams{}},
 	{"system/resources/read", true, struct{}{}},
 	{"system/resources/preview", true, wsl.ResourceConfigParams{}},
 	{"system/resources/apply", false, wsl.ResourceConfigParams{}},

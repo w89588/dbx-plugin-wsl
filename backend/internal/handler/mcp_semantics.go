@@ -89,7 +89,8 @@ func describeMethod(m mcpMethod) map[string]any {
 	case "diagnostics/run":
 		field("ports", map[string]any{"maxItems": 16, "items": map[string]any{"type": "integer", "minimum": 1, "maximum": 65535}})
 		field("registry", map[string]any{"description": "可选主机名或主机:端口，不含协议、路径或凭据；GET HTTPS /v2/ 不跟随重定向"})
-		d["description"] = "脱敏诊断 WSL/WSLC、用户盘空间、回环端口和可选注册表；只代表检查时刻。"
+		d["description"] = "脱敏诊断 WSL/WSLC、用户盘空间、回环端口和可选注册表；通过 MCP 必须使用 wsl_write，只代表检查时刻。"
+		d["preconditions"] = []string{"先取得用户对具体诊断目标和端口的授权；MCP 只读工具不可调用，包括未指定 registry 或 ports 时"}
 		d["sideEffects"] = []string{"临时绑定后释放指定回环端口；可选匿名 HTTPS 请求；不自动修复"}
 	case "jobs/get", "jobs/cancel", "wslc/events/stop":
 		required("jobId")

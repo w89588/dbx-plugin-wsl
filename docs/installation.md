@@ -2,7 +2,7 @@
 
 ## 1. 前置检查
 
-0.1.6 移除 `engines.dbx >=0.6.55`，仅保留 `engines.host_api: "1"`。当前完整清单的官方解析规则边界为 DBX 0.6.27；0.6.26 不识别 MCP 声明，这不是去掉版本字段能解决的问题。参见[兼容性验证](compatibility.md)。
+0.1.6 起移除 `engines.dbx >=0.6.55`，仅保留 `engines.host_api: "1"`。当前完整清单的官方解析规则边界为 DBX 0.6.27；0.6.26 不识别 MCP 声明，这不是去掉版本字段能解决的问题。参见[兼容性验证](compatibility.md)。
 
 在 PowerShell 中确认：
 
@@ -35,8 +35,8 @@ npx --yes @dbx-app/plugin-cli@0.1.9 package .
 产物：
 
 ```
-dist/com.dbx.wsl-0.1.6-windows-x64.dbxp
-dist/com.dbx.wsl-0.1.6-windows-x64.artifact.json
+dist/com.dbx.wsl-0.1.7-windows-x64.dbxp
+dist/com.dbx.wsl-0.1.7-windows-x64.artifact.json
 ```
 
 包内结构（可用 ZIP 工具查看，`.dbxp` 本质为 ZIP）：
@@ -54,7 +54,7 @@ checksums.json
 1. 打开 DBX → **插件中心**。
 2. 进入 **设置**（插件中心右上角/全局配置），打开 **允许安装未签名开发包**。
    - 该选项仅用于本地开发验证，不会放宽官方商店安装校验；验证完成后建议关闭。
-3. 在插件中心选择 **安装本地插件**（或“从文件安装”），选择 `dist\com.dbx.wsl-0.1.6-windows-x64.dbxp`。
+3. 在插件中心选择 **安装本地插件**（或“从文件安装”），选择 `dist\com.dbx.wsl-0.1.7-windows-x64.dbxp`。
 4. 安装成功后打开 **WSL 管理器**：
    - 顶部/侧边栏插件快捷入口（appToolbar）；
    - 命令面板（Ctrl/Cmd+K）搜索 “WSL Manager”；

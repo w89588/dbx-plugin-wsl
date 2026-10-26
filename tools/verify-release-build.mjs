@@ -1,0 +1,28 @@
+// Verify provenance of the packaged executable, not only its display version.
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {readFileSync,mkdirSync,mkdtempSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {createHash} from 'node:crypto';
+const run=(command,args)=>execFileSync(command,args,{encoding:'utf8',windowsHide:true});
+assert.equal(run('git',['status','--porcelain']).trim(),'','Release builds require a clean working tree');
+const manifest=JSON.parse(readFileSync('manifest.json','utf8'));
+const revision=run('git',['rev-parse',`v${manifest.version}^{commit}`]).trim();
+assert.equal(revision,run('git',['rev-parse','HEAD']).trim(),'Build from the tagged commit');
+const stem=`dist/${manifest.id}-${manifest.version}-windows-x64`;
+const pkg=resolve(stem+'.dbxp');
+const bytes=readFileSync(pkg);const artifact=JSON.parse(readFileSync(stem+'.artifact.json','utf8'));
+assert.equal(artifact.sha256,createHash('sha256').update(bytes).digest('hex'));
+assert.equal(artifact.size,bytes.length);
+mkdirSync('tests/tmp',{recursive:true});
+const temp=mkdtempSync(resolve('tests/tmp/release-build-'));
+const binary='bin/windows-x64/dbx-plugin-wsl-manager.exe';
+const packaged=JSON.parse(run('python',['-c','import zipfile,json,sys; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; assert "signature.json" not in z.namelist(); z.extract(sys.argv[3],sys.argv[2]); print(z.read("manifest.json").decode("utf-8"))',pkg,temp,binary]));
+assert.equal(packaged.version,manifest.version);assert.equal(packaged.id,manifest.id);
+assert.equal(packaged.publisher,manifest.publisher);
+const info=run('go',['version','-m',join(temp,binary)]);
+assert(info.includes('vcs.revision='+revision),'Packaged executable does not match tagged source');
+assert(info.includes('vcs.modified=false'),'Packaged executable was built from a dirty checkout');
+assert(!info.includes('+dirty'),'Dirty module version in executable');
+console.log(`PASS: ${manifest.id}@${manifest.version}; source ${revision}; vcs.modified=false; package identity, ZIP integrity, SHA-256 and size verified.`);
+console.log(info.trim());

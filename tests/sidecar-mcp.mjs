@@ -36,6 +36,18 @@ try {
  const described=await invoke('wsl_describe');assert.equal(described.payload.methods.length,(readFileSync(join(root,'backend/internal/handler/mcp_catalog.go'),'utf8').match(/\{"[^"]+", (?:true|false),/g)||[]).length);
  const names=new Set(described.payload.methods.map(m=>m.method));
  for(const method of ['wsl/distros/exec','wslc/containers/exec','wslc/registry/login','jobs/get'])assert(names.has(method));
+ const diagnosticDescriptor=described.payload.methods.find(m=>m.method==='diagnostics/run');
+ assert.equal(diagnosticDescriptor.readOnly,false);
+ for(const params of [{},{registry:'127.0.0.1:8443'},{registry:'[::1]:8443'},{ports:[5432]},{registry:'registry.example:8443',ports:[5432]}]) {
+   const rejected=await invoke('wsl_read',{method:'diagnostics/run',paramsJson:JSON.stringify(params)});
+   assert.equal(rejected.envelope.isError,true,'read-only diagnostics allowed');
+   assert.equal(rejected.payload.error.code,'INVALID_PARAMS');
+ }
+ const diagnostic=await invoke('wsl_write',{method:'diagnostics/run',paramsJson:'{}'});
+ assert.equal(diagnostic.envelope.isError,false);
+ assert.equal(diagnostic.payload.redacted,true);
+ assert(diagnostic.payload.checks.some(c=>c.id==='registry'&&c.status==='skipped'));
+ console.log('PASS: packaged diagnostics rejects every read-only request; write-authorized local diagnostics remains available.');
  const policy=(await invoke('wsl_read',{method:'system/wsl/idle/read'})).payload;
  const saved=await invoke('wsl_write',{method:'system/wsl/idle/write',paramsJson:JSON.stringify({mode:'keepAlive',expectedRevision:policy.revision})});
  assert.equal(saved.envelope.isError,false);assert.equal(saved.payload.policy.instanceIdleTimeoutMs,-1);

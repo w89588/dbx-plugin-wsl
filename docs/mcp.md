@@ -7,7 +7,7 @@ WSL 管理器 0.1.6 通过 DBX 的插件 MCP 桥公开四个工具，覆盖 **85
 1. 安装本版本 `.dbxp`，不再用 `engines.dbx` 人为限定产品版本。当前 MCP 声明从 **DBX 0.6.27** 开始可解析，0.6.26 及更早的解析器不识别该类型，详见[兼容性证据](compatibility.md)。GitHub Release 为未签名候选包，本地安装需允许未签名开发包；官方商店版本由维护者审核签名。
 2. 使用 DBX 自带的 MCP 配置/安装入口，将 **DBX MCP 服务**连接到 AI 客户端。沿用 DBX 生成的配置和当前 Windows 用户的数据目录。
 3. 重连 MCP 客户端并刷新工具列表。插件 Manifest 已声明 `external_tools:true`，兼容的宿主会发现 `dbx_wsl__wsl_connections`、`dbx_wsl__wsl_describe`、`dbx_wsl__wsl_read`、`dbx_wsl__wsl_write`。
-4. 查询能力使用只读工具；需要修改时，在 DBX MCP 策略及客户端中允许对应写工具。宿主只读策略优先，插件不能放宽宿主策略。
+4. 查询能力使用只读工具；需要修改或运行诊断探测时，在 DBX MCP 策略及客户端中允许对应写工具。宿主只读策略优先，插件不能放宽宿主策略。
 
 **内置 AI 的当前限制**：核对 DBX 0.6.55 发布时的插件桥实现，内置 AI 仅发现已打开的连接型插件；WSL 管理器是工作台型插件，尚无连接提供者，所以本版本使用外部 DBX MCP 接入。Manifest 的 `ai_tools:true` 声明了允许接入意图，但不会让内置 AI 绕过上述发现规则。
 
@@ -117,3 +117,8 @@ node tests/sidecar-idle.mjs
 资源配置先 `system/resources/read` 获取 revision，再 `preview`、确认并 `apply`。遇到冲突应重新读取并重新确认差异，不能只替换 revision 后覆盖。模板和诊断不会自动创建 DBX 连接或自动修复系统。删除、exec 与 console 标为 `never-automatic`，必须保持明确操作授权边界。
 
 0.1.6 已撤下页面模板功能，以上模板方法仅保留在后台 RPC/MCP。
+
+
+## 诊断的 MCP 授权要求（0.1.7）
+
+`diagnostics/run` 可以向指定注册表发送 HTTPS 请求，并短暂绑定指定本机端口，因此统一归入 `wsl_write`，需要获得具体诊断目标的授权。`wsl_read` 始终拒绝该方法，包括空参数、仅本机检查和未填写注册表的情况；拒绝发生在诊断执行前，不会启动工具检查或发出探测请求。原先通过 `wsl_read` 调用诊断的客户端需迁移到 `wsl_write`。页面中的手动诊断入口和报告格式不变。

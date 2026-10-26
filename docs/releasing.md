@@ -13,14 +13,22 @@ Tag 注释、Release 标题与说明、PR 标题与正文默认使用中文；�
    node tools/manifest-check.mjs
    ```
 
-3. 构建未签名候选包：
+3. 先提交完整源码并创建发布标签；确认 `git status --porcelain` 为空，标签解引用提交等于 HEAD。不要在修改版本号但尚未提交的工作区构建发布包。
+
+   ```powershell
+   git tag -a v<version> -m "WSL 管理器 v<version>：<本次更新摘要>"
+   ```
+
+   使用固定工具链构建未签名候选包（0.1.7 使用 Go 1.24.13 windows/amd64、CLI 0.1.9）：
 
    ```powershell
    $env:GOTMPDIR='..\.gotmp'; $env:GOCACHE='..\.gocache'
    npx --yes @dbx-app/plugin-cli@0.1.9 package .
    ```
 
-   产物：`dist/<plugin-id>-<version>-windows-x64.dbxp` 与同名 `.artifact.json`。
+   产物：`dist/<plugin-id>-<version>-windows-x64.dbxp` 与同名 `.artifact.json`。运行 `node tools/verify-release-build.mjs`，检查包内身份、VCS 提交、干净构建标志及文件校验值；随后执行包内回归测试。任何源码变更都必须重新提交和构建。
+
+   本流程确保源码与构建提交可追溯；不以此宣称不同机器/工具链生成的 ZIP 必然逐字节一致。
 
 4. 生成商店与 Release 元数据：
 
@@ -33,7 +41,7 @@ Tag 注释、Release 标题与说明、PR 标题与正文默认使用中文；�
 ## 2. 发布源码 Tag 与未签名候选 Release
 
 ```powershell
-git tag -a v<version> -m "WSL 管理器 v<version>：<本次更新摘要>"
+# 标签已在构建前创建；验证通过后再推送
 git push origin main v<version>
 gh release create v<version> `
   dist/<plugin-id>-<version>-windows-x64.dbxp `
