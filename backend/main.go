@@ -12,8 +12,8 @@ import (
 func main() {
 	metadata := dbxpluginsdk.Metadata{
 		ID:           "com.dbx.wsl",
-		Version:      "0.1.2",
-		Capabilities: []string{"events", "jobs"},
+		Version:      "0.1.3",
+		Capabilities: []string{"events", "jobs", "mcp"},
 	}
 	server := dbxpluginsdk.NewServer(metadata, handler.New(execx.NewRunner()))
 	if err := server.Serve(); err != nil {

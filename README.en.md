@@ -42,6 +42,10 @@ current user's privileges and invokes local WSL tools and Windows helpers as dis
 - Settings: visual editors for `.wslconfig` and wslc `settings.yaml`, with automatic backups.
 - Overview dashboard, dark/light theme, English/Chinese UI, task panel with live logs and cancellation.
 
+## AI and MCP
+
+Four tools (`wsl_connections`, `wsl_describe`, `wsl_read`, `wsl_write`) expose all 73 existing management methods through the external DBX MCP service, including local distributions, containers, command/file access, images, volumes, networks, configuration, registries and jobs. Requires DBX 0.6.55+. Writes retain host/client authorization. The current built-in DBX agent discovers open connection-provider plugins only; this workbench plugin uses the external MCP surface. See the [MCP guide](docs/mcp.md).
+
 ## Screenshots
 
 | Overview | Distributions |

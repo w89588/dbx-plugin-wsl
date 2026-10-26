@@ -3,14 +3,14 @@
   "manifest_version": 1,
   "id": "com.dbx.wsl",
   "name": "WSL Manager",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "w89588",
   "description": "Visual manager for WSL distributions (wsl) and WSL containers (wslc) on Windows.",
   "icon": "assets/plugin.svg",
   "source": "https://github.com/w89588/dbx-plugin-wsl",
   "homepage": "https://github.com/w89588/dbx-plugin-wsl",
   "engines": {
-    "dbx": ">=0.5.68",
+    "dbx": ">=0.6.55",
     "host_api": "1"
   },
   "permissions": [
@@ -70,6 +70,13 @@
           "default_visible": true
         }
       ]
+    },
+    {
+      "type": "mcp",
+      "id": "com.dbx.wsl.mcp",
+      "description": "Read and manage local WSL distributions, containers, images, volumes, networks, configuration and jobs.",
+      "ai_tools": true,
+      "external_tools": true
     }
   ],
   "localizations": {
@@ -87,6 +94,9 @@
         },
         "com.dbx.wsl.menus": {
           "label": "WSL 管理器菜单"
+        },
+        "com.dbx.wsl.mcp": {
+          "description": "通过 MCP 查询和管理本机 WSL 发行版、容器、镜像、卷、网络、配置和任务。"
         }
       }
     }

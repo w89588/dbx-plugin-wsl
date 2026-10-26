@@ -3,9 +3,9 @@
 本文件是 **前端 UI** 与 **Go Sidecar** 之间唯一的接口约定。任何一方改动接口，必须先改本文件并在 PR 描述中说明。
 
 - 插件 ID：`com.dbx.wsl`
-- 版本：`0.1.2`
+- 版本：`0.1.3`
 - 传输：Sidecar Protocol v1 / `stdio-jsonl`（每行一个 JSON-RPC 2.0 消息）
-- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.2"`
+- Sidecar 元数据必须与 `manifest.json` 完全一致：`ID = "com.dbx.wsl"`，`Version = "0.1.3"`
 - 日志只能写 stderr；stdout 只能输出协议消息
 
 ---
@@ -742,3 +742,18 @@ Windows 后端通过 `ShellExecuteW(open, 固定 HTTPS URL)` 调用系统默认�
 ### 9.3 开发环境注意（Windows 沙箱/完整性级别）
 
 若插件源码位于带 Low mandatory integrity label 的目录（部分受限/沙箱工作区），从该目录**直接启动**的 Sidecar 会以 Low 完整性运行，`wsl.exe` / `wslc.exe` 返回 `Wsl/E_ACCESSDENIED`。这是运行目录的完整性标签问题，不是插件缺陷。验证/开发时请把 dev host 的 `--data-dir` 放到常规用户目录（如 `%LOCALAPPDATA%`），使后端可执行文件在 Medium 完整性下运行；DBX 正常安装路径（插件商店）不受影响。
+
+
+## 10. MCP bridge（0.1.3）
+
+- `mcp/tools`：返回四个 MCP 工具定义，纯静态发现，不执行 WSL 命令。
+- `mcp/call`：参数 `{tool, arguments, lifecycle?}`，兼容 DBX 插件桥。工作台仅操作当前 Windows 用户的本机资源，忽略连接 lifecycle，不接受远程目标。
+- `wsl_connections`：无参数，复用 `wsl/distros/list`；不会把 WSLC 容器误认为 WSL 发行版。
+- `wsl_describe`：可选 `method`，列举或获取方法类型 Schema；语义必填与取值范围由原有服务校验。
+- `wsl_read` / `wsl_write`：`{method, paramsJson?}`，`paramsJson` 为 JSON 对象字符串，默认 `{}`。白名单与现有 73 个接口对应，禁止桥递归、未知方法和未知参数。字符串承载参数以保留跨模型 Schema 兼容性，避免宿主每插件 64 个工具上限截断能力。
+- 查询工具只允许明确声明的查询方法；exec、配置、删除、后台事件、取消均需写工具。日志 `follow:true` 也需写工具。
+- 返回标准 `{content:[{type:"text",text:"JSON"}],isError,resultType:"complete"}`，业务失败保留 code/message/hint/detail；非零命令退出码标记 `isError:true`。
+- 长任务返回 jobId 后，通过同一 sidecar 的 `jobs/get` 查询最终状态和输出；返回 jobId 不代表执行成功。Sidecar 重启后原任务不可查询。
+- 凭据仅经原有 registry 服务写入 stdin；参数解析失败不回显请求或解码器详情。MCP 客户端/宿主可能记录原始工具入参，优先在插件界面登录。
+
+接入、宿主兼容限制与示例见 [MCP 指南](mcp.md)。

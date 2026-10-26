@@ -45,6 +45,12 @@ func (h *Handler) Handle(
 	params json.RawMessage,
 	emitter *dbxpluginsdk.Emitter,
 ) (any, *dbxpluginsdk.PluginError) {
+	if method == "mcp/tools" {
+		return mcpTools(), nil
+	}
+	if method == "mcp/call" {
+		return h.mcpCall(params, emitter)
+	}
 	ctx := context.Background()
 	result, appErr := h.dispatch(ctx, method, params, emitter)
 	if appErr == nil {

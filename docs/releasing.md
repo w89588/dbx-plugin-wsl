@@ -17,7 +17,7 @@ Tag 注释、Release 标题与说明、PR 标题与正文默认使用中文；�
 
    ```powershell
    $env:GOTMPDIR='..\.gotmp'; $env:GOCACHE='..\.gocache'
-   node ..\node_modules\@dbx-app\plugin-cli\bin\dbx-plugin.js package .
+   npx --yes @dbx-app/plugin-cli@0.1.9 package .
    ```
 
    产物：`dist/<plugin-id>-<version>-windows-x64.dbxp` 与同名 `.artifact.json`。
