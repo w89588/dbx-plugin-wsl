@@ -17,5 +17,5 @@
   "source": "https://github.com/w89588/dbx-plugin-wsl",
   "homepage": "https://github.com/w89588/dbx-plugin-wsl",
   "license": "Apache-2.0",
-  "releaseNotes": "v0.1.7：修复 MCP 只读入口可运行网络和端口诊断的问题。diagnostics/run 统一要求 wsl_write 授权；保留手动诊断功能，新增权限边界回归及干净提交构建校验。"
+  "releaseNotes": "v0.1.3（相较 v0.1.2）：新增四个 MCP 工具与 85 个管理接口、备份恢复、诊断中心、资源配置助手及后台 PostgreSQL/Redis 模板。资源事件流原位更新，完善任务终态与淘汰、配置冲突保护。诊断统一要求写授权，取消 DBX 产品版本硬门槛；从干净标签提交构建并校验包内 VCS 信息。"
 }

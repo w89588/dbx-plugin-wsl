@@ -182,7 +182,7 @@ to open fixed project or Microsoft documentation HTTPS URLs in the default brows
 - Windows only (`windows-x64`).
 - WSL 1 requires the optional Windows component; version switching otherwise offers WSL 2 only.
 - `wslc` features depend on the installed WSL version.
-- Export/import/build path fields accept Windows paths (no native file picker yet).
+- Export/import/build path fields accept Windows paths; the backup workflow includes a native folder picker.
 - `wslc` 3.0.3/3.0.4 cannot list signed-in registries, so registry state is confirmed by pull results.
 
 ## Contributing
@@ -203,8 +203,8 @@ submission checklist.
 Resource changes stream over the existing host event bridge (not HTTP SSE). The UI patches existing rows and fields, preserving focus, scroll and drafts. Hidden views unsubscribe; visible views reconnect with a fresh snapshot. Sampling remains in the backend; unchanged data is not pushed. Configuration writes require the revision returned by `system/config/read`. Completed job history is limited to 32 jobs and 24 hours in the current sidecar; restarting the sidecar clears history.
 
 
-## Consolidated v0.1.6
+## Backend development templates
 
-Backup/restore, diagnostics, resource configuration, task consistency and compatibility fixes are consolidated into v0.1.6. The development template page, navigation and creation dialogs have been removed. Backend template RPC/MCP methods remain available; existing containers, volumes and records are preserved.
+PostgreSQL and Redis templates are available through RPC/MCP only, with loopback ports, password authentication and named volumes. There is no template page or creation dialog.
 
-As of v0.1.7, `diagnostics/run` requires `wsl_write` authorization because it can probe registry hosts and local ports. `wsl_read` rejects it for every parameter combination, including an empty request. Manual diagnostics in the workbench remain available.
+`diagnostics/run` requires `wsl_write` authorization because it can probe registry hosts and local ports. `wsl_read` rejects it for every parameter combination, including an empty request. Manual diagnostics in the workbench remain available.

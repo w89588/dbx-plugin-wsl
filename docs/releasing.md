@@ -19,7 +19,7 @@ Tag 注释、Release 标题与说明、PR 标题与正文默认使用中文；�
    git tag -a v<version> -m "WSL 管理器 v<version>：<本次更新摘要>"
    ```
 
-   使用固定工具链构建未签名候选包（0.1.7 使用 Go 1.24.13 windows/amd64、CLI 0.1.9）：
+   使用固定工具链构建未签名候选包（0.1.3 使用 Go 1.24.13 windows/amd64、CLI 0.1.9）：
 
    ```powershell
    $env:GOTMPDIR='..\.gotmp'; $env:GOCACHE='..\.gocache'

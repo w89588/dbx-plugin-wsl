@@ -28,7 +28,7 @@ func TestResourceLeaseOverHostProtocol(t *testing.T) {
 		}
 		h.streamsMu.Unlock()
 	}()
-	server := sdk.NewServer(sdk.Metadata{ID: "com.dbx.wsl", Version: "0.1.5"}, h).WithIO(input, outputWriter, io.Discard)
+	server := sdk.NewServer(sdk.Metadata{ID: "com.dbx.wsl", Version: "0.1.3"}, h).WithIO(input, outputWriter, io.Discard)
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(); outputWriter.Close() }()
 	messages := make(chan map[string]any, 32)

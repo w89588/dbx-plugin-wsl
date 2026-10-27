@@ -24,5 +24,6 @@ const info=run('go',['version','-m',join(temp,binary)]);
 assert(info.includes('vcs.revision='+revision),'Packaged executable does not match tagged source');
 assert(info.includes('vcs.modified=false'),'Packaged executable was built from a dirty checkout');
 assert(!info.includes('+dirty'),'Dirty module version in executable');
+assert(info.split(/\r?\n/).some(line=>line.trim().split(/\s+/)[0]==='mod' && line.trim().split(/\s+/)[2]===`v${manifest.version}`),'Module version must match the release tag');
 console.log(`PASS: ${manifest.id}@${manifest.version}; source ${revision}; vcs.modified=false; package identity, ZIP integrity, SHA-256 and size verified.`);
 console.log(info.trim());
